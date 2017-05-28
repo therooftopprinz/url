@@ -1,7 +1,9 @@
 # UDP Reliability Layer
+
 UDP Reliability Layer is a user protocol that will provide connectionless reliable packet transmission.
 
 **URL Format**
+
 URL is composed of mutiple headers and 	a payload.
 
 | |
@@ -14,7 +16,9 @@ URL is composed of mutiple headers and 	a payload.
 | |
 
 ## Header Formats
+
 **Acknowledgement Header**
+
 Acknowledgement(Or NACK If NACK Information is Present) of the arrived message. Can be multiple acknowledgment from different message received.
 
 | | |
@@ -26,6 +30,7 @@ Acknowledgement(Or NACK If NACK Information is Present) of the arrived message. 
 * SQN (30-bit) - Segment Sequence Number
 
 **URL Message Size Header**
+
 Indicates the size of URL message that will be sent. This message is only present when URL Message data Header is present and has OFFSET=0.
 
 | | |
@@ -37,6 +42,7 @@ Indicates the size of URL message that will be sent. This message is only presen
 * SZ (30-bit) - URL Message size
 
 **URL Message data Header**
+
 Always last header when available. It specifies the segment offset of the URL message.
 
 | | |
@@ -48,6 +54,7 @@ Always last header when available. It specifies the segment offset of the URL me
 * OFSSET (30-bit) - URL Message Offset
 
 **URL Protocol Information : NACK Information**
+
 Indicated that there error in the received URL Message. When present, next header is always Acknowledgement Header.
 
 | | | |
@@ -62,6 +69,7 @@ Indicated that there error in the received URL Message. When present, next heade
 
 
 **URL Protocol Information : Sender Request**
+
 Indicates that the sender has a request to the receiver
 
 | | | |
