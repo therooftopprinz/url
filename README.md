@@ -4,7 +4,7 @@ UDP Reliability Layer is a user protocol that will provide connectionless reliab
 
 **URL Format**
 
-URL is composed of mutiple headers and 	a payload.
+URL is composed of mutiple headers and might contain a payload.
 
 | |
 |:--:|
@@ -19,48 +19,48 @@ URL is composed of mutiple headers and 	a payload.
 
 **Acknowledgement Header**
 
-Acknowledgement(Or NACK If NACK Information is Present) of the arrived message. Can be multiple acknowledgment from different message received.
+**ACK** (Or **NACK** If NACK **URL Protocol Information : NACK Information**) of the arrived message. No Payload. Must not contain with **URL Message Data Header**.
 
-| | |
-|:---:|:---:|
-| HT = 00 |	OFSSET |
-| | |
+
+| \[0-3\](31:30) | \[0-3\](29:0) | \[4-7\](31:0) |
+|:--------------:|:-------------:|:-------------:|
+| HT = 00        | OFSSET        | MSG_ID        |
+
 
 * HT (2-bit)- Header Type
-* SQN (30-bit) - Segment Sequence Number
+* SQN (30-bit) - URL Message Offset for the corresponding ACK/NACK
+* MSG_ID - Message Identifier for the corresponding ACK/NACK
 
 **URL Message Size Header**
 
 Indicates the size of URL message that will be sent. This message is only present when URL Message data Header is present and has OFFSET=0.
 
-| | |
-|:---:|:---:|
-| HT = 01 |	SZ |
-| | |
+| \[0-3\](31:30) | \[0-3\](29:0) |
+|:--------------:|:-------------:|
+| HT = 01        |  SZ           |
 
 * HT (2-bit) - Header Type
 * SZ (30-bit) - URL Message size
 
-**URL Message data Header**
+**URL Message Data Header**
 
 Always last header when available. It specifies the segment offset of the URL message.
 
-| | |
-|:---:|:---:|
-| HT = 10 |	OFFSET |
-| | |
+| \[0-3\](31:30) | \[0-3\](29:0) | \[4-7\](31:0) |
+|:--------------:|:-------------:|:-------------:|
+| HT = 10        | OFFSET        | MSG_ID        |
 
 * HT (2-bit) - Header Type
-* OFSSET (30-bit) - URL Message Offset
+* OFSSET (30-bit) - URL Message Offset for the corresponding segment payload.
+* MSG_ID - Message Identifier for the corresponding segment payload.
 
 **URL Protocol Information : NACK Information**
 
 Indicated that there error in the received URL Message. When present, next header is always Acknowledgement Header.
 
-| | | |
-|:---:|:---:|:--:|
-| HT = 11 | ID=0 | INFO |
-| | | |
+| \[0-3\](31:30) | \[0-3\](29:27) | \[4-7\](26:0) |
+|:--------------:|:-------------:|:--------------:|
+| HT = 11        | ID=0          | INFO           |
 
 * HT (2-bit) - Header Type
 * ID (3-bit) - Infomation type
@@ -72,10 +72,9 @@ Indicated that there error in the received URL Message. When present, next heade
 
 Indicates that the sender has a request to the receiver
 
-| | | |
-|:---:|:---:|:--:|
-| HT = 11 | ID=1 | INFO |
-| | | |
+| \[0-3\](31:30) | \[0-3\](29:27) | \[4-7\](26:0) |
+|:--------------:|:-------------:|:--------------:|
+| HT = 11        | ID=1          | INFO           |
 
 * HT (2-bit) - Header Type
 * ID (3-bit) - Infomation type
