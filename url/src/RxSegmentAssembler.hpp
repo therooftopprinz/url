@@ -10,12 +10,15 @@ namespace urlsock
 class RxSegmentAssembler
 {
 public:
-    enum class EReceiveStatus {COMPLETE, INCOMPLETE, INCORRECT_RTX_DATA, INCORRECT_RTX_SIZE, DATA_OUTOFBOUNDS};
+    enum class EReceiveStatus {COMPLETE, INCOMPLETE, INCORRECT_RTX_DATA, INCORRECT_RTX_SIZE, DATA_OUTOFBOUNDS, DATA_OVERLAPPED};
     RxSegmentAssembler();
     ~RxSegmentAssembler();
     void init(size_t size);
     bool isInited();
     uint8_t* claim();
+    const uint8_t* peek() const;
+    size_t size() const;
+    size_t receivedSize() const;
     EReceiveStatus receive(const Buffer& data, uint32_t offset);
     EReceiveStatus receive(const BufferView& data, uint32_t offset);
     EReceiveStatus receive(const uint8_t *start, size_t size, uint32_t offset);

@@ -78,7 +78,6 @@ public:
 
     /** Capacity **/
     bool empty();
-    size_t size();
     size_t size() const;
     void reserve(size_t newCap);
     size_t capacity();

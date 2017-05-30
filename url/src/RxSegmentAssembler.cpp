@@ -44,6 +44,21 @@ uint8_t* RxSegmentAssembler::claim()
     return rv;
 }
 
+const uint8_t* RxSegmentAssembler::peek() const
+{
+    return mUrlMessage;
+}
+
+size_t RxSegmentAssembler::size() const
+{
+    return mUrlMessageTotalSize;
+}
+
+size_t RxSegmentAssembler::receivedSize() const
+{
+    return mUrlMessageTotalSize;
+}
+
 RxSegmentAssembler::EReceiveStatus RxSegmentAssembler::receive(const Buffer& data, uint32_t offset)
 {
     return receive(data.data(), data.size(), offset);
@@ -68,18 +83,28 @@ RxSegmentAssembler::EReceiveStatus RxSegmentAssembler::receive(const uint8_t *st
         {
             return EReceiveStatus::INCORRECT_RTX_SIZE;
         }
-        if (!std::memcmp(mUrlMessage+found->first, start, size))
+        if (std::memcmp(mUrlMessage+found->first, start, size))
         {
             return EReceiveStatus::INCORRECT_RTX_DATA;
         }
     }
     else
     {
+        auto bufferTail = offset+size;
+        auto lb = mReceivedBlocks.lower_bound(offset);
+        if (lb != mReceivedBlocks.end() && bufferTail > lb->first)
+        {
+            return EReceiveStatus::DATA_OVERLAPPED;
+        }
+        if (lb != mReceivedBlocks.begin() && ((--lb)->first+lb->second) > offset)
+        {
+            return EReceiveStatus::DATA_OVERLAPPED;
+        }
+
         mReceivedBlocks.emplace(offset, size);
         std::memcpy(mUrlMessage + offset, start, size);
+        mUrlMessageReceivedSize += size;
     }
-
-    mUrlMessageTotalSize += size;
 
     if (mUrlMessageReceivedSize == mUrlMessageTotalSize)
     {

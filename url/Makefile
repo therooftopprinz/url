@@ -9,7 +9,8 @@ TLD                := .
 GTEST              := ../libs/gtest.o
 
 #TARGET
-URL_TARGET      := ../urllib
+URL_TARGET      := ../bin
+URL_LIB_TARGET      := ../bin
 
 #The Directories, Source, Includes, Objects, Binary and Resources
 URL_SRCDIR         := src
