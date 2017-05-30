@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cstring>
 #include "Buffer.hpp"
 
 namespace urlsock
@@ -7,40 +8,40 @@ namespace urlsock
 Buffer::Buffer(size_t bufferSize):
     mDataSize(bufferSize),
     mAllocSize(bufferSize),
-    mAllocData(malloc(bufferSize))
+    mAllocData((uint8_t*)std::malloc(bufferSize))
 {
     validateAlloc();
 }
 
 Buffer::Buffer(uint8_t* start, uint8_t* end):
-    mDataSize(uintptr_t(end) - start),
-    mAllocSize(size),
-    mAllocData(malloc(size))
+    mDataSize(uintptr_t(end) - uintptr_t(start)),
+    mAllocSize(mDataSize),
+    mAllocData((uint8_t*)std::malloc(mDataSize))
 {
     validateAlloc();
-    std::memcpy(mAllocData, start, size);
+    std::memcpy(mAllocData, start, mDataSize);
 }
 
 Buffer::Buffer(void* start,size_t size):
-    mDataSize(end-start),
+    mDataSize(size),
     mAllocSize(size),
-    mAllocData(malloc(size))
+    mAllocData((uint8_t*)std::malloc(size))
 {
     validateAlloc();
     std::memcpy(mAllocData, start, size);
 }
 
 Buffer::Buffer(const Buffer& other):
-    mDataSize(other.size),
-    mAllocSize(size),
-    mAllocData(malloc(size))
+    mDataSize(other.mDataSize),
+    mAllocSize(mDataSize),
+    mAllocData((uint8_t*)std::malloc(mDataSize))
 {
     validateAlloc();
-    std::memcpy(mAllocData, other.mAllocData, size);
+    std::memcpy(mAllocData, other.mAllocData, mDataSize);
 }
 
 Buffer::Buffer(Buffer&& other):
-    mDataSize(other.size),
+    mDataSize(other.mDataSize),
     mAllocSize(other.mAllocSize),
     mAllocData(other.mAllocData)
 {
@@ -59,7 +60,7 @@ Buffer::~Buffer()
     }
 }
 
-void validateAlloc()
+void Buffer::validateAlloc()
 {   
     if (!mAllocData)
     {
@@ -71,24 +72,24 @@ void validateAlloc()
 }
 
 
-Buffer& operator=(const Buffer& other)
+Buffer& Buffer::operator=(const Buffer& other)
 {
     return *this;
 }
 
-Buffer& operator=(Buffer&& other)
+Buffer& Buffer::operator=(Buffer&& other)
 {
     return *this;
 }
 
-void assign(uint8_t* start, uint8_t* end)
+void Buffer::assign(uint8_t* start, uint8_t* end)
 {
     uint8_t* newData = mAllocData;
-    size_t wantedSize = uintptr_t(end) - start;
+    size_t wantedSize = uintptr_t(end) - uintptr_t(start);
     reserve(wantedSize);
     if (wantedSize > mAllocSize)
     {
-        newData = std::malloc(wantedSize);
+        newData = (uint8_t*)std::malloc(wantedSize);
         mAllocSize = wantedSize;
     }
     if (!newData)
@@ -110,22 +111,27 @@ uint8_t* Buffer::data()
     return mAllocData;
 }
 
+const uint8_t* Buffer::data() const
+{
+    return mAllocData;
+}
+
 /** Capacity **/
 bool Buffer::empty()
 {
     return !mDataSize;
 }
 
-size_t Buffer::size()
+size_t Buffer::size() const
 {
-    return mDataSize
+    return mDataSize;
 }
 
 void Buffer::reserve(size_t newCap)
 {
     if (newCap > mAllocSize)
     {
-        uint8_t*  newData = std::realloc(mAllocData, newCap);
+        uint8_t*  newData = (uint8_t*)std::realloc(mAllocData, newCap);
         if (!newData)
         {
             return;
@@ -144,7 +150,7 @@ void Buffer::shrink_to_fit()
 {
     if (mAllocSize > mDataSize)
     {
-        uint8_t* newData = std::realloc(mAllocData, mDataSize);
+        uint8_t* newData = (uint8_t*)std::realloc(mAllocData, mDataSize);
         if (!newData)
         {
             return;
@@ -168,7 +174,7 @@ void Buffer::resize(size_t newSize)
         mDataSize = newSize;
         return;
     }
-    uint8_t* newData = std::malloc(newSize);
+    uint8_t* newData = (uint8_t*)std::malloc(newSize);
     if (!newData)
     {
         throw AllocationFailed("Malloc Nulled during resize.");

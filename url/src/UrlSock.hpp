@@ -51,18 +51,6 @@ struct IRxBufferManager
     virtual RxObject dequeue() = 0;
 }
 
-class RxSegmentAssembler
-{
-public:
-    RxSegment();
-    ~RxSegment();
-    void init(size_t size);
-    void receive(Buffer& data, uint32_t offset);
-    bool isMessageComplete();
-    bool inited();
-private:
-};
-
 class RxContext
 {
 public:
