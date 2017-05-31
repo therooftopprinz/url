@@ -31,16 +31,17 @@ URL is composed of mutiple headers and might contain a payload.
 * SQN (30-bit) - URL Message Offset for the corresponding ACK/NACK
 * MSG_ID - Message Identifier for the corresponding ACK/NACK
 
-**URL Message Size Header**
+**URL Message Initial Data Header**
 
-Indicates the size of URL message that will be sent. This message is only present when URL Message data Header is present and has OFFSET=0.
+Indicates the start of trasmnission of URL Message. Contains the size of URL Message to be sent. Payload is is required. Payload OFFSET is 0.
 
-| \[0-3\](31:30) | \[0-3\](29:0) |
-|:--------------:|:-------------:|
-| HT = 01        |  SZ           |
+| \[0-3\](31:30) | \[0-3\](29:0) | \[4-7\](31:0) |
+|:--------------:|:-------------:|:-------------:|
+| HT = 01        |  SZ           | MSG_ID        |
 
 * HT (2-bit) - Header Type
 * SZ (30-bit) - URL Message size
+* MSG_ID (32-bit) - Message Identifier for the corresponding segment payload.
 
 **URL Message Data Header**
 
@@ -52,11 +53,11 @@ Always last header when available. It specifies the segment offset of the URL me
 
 * HT (2-bit) - Header Type
 * OFSSET (30-bit) - URL Message Offset for the corresponding segment payload.
-* MSG_ID - Message Identifier for the corresponding segment payload.
+* MSG_ID (32-bit) - Message Identifier for the corresponding segment payload.
 
 **URL Protocol Information : NACK Information**
 
-Indicated that there error in the received URL Message. When present, next header is always Acknowledgement Header.
+Indicated that there is an error in the received URL Message Segment. When present, next header is always Acknowledgement Header.
 
 | \[0-3\](31:30) | \[0-3\](29:27) | \[4-7\](26:0) |
 |:--------------:|:-------------:|:--------------:|
@@ -98,4 +99,3 @@ Indicates that the sender has a request to the receiver
 ## URL Message Segment Size Selection
 ## URL Message Segment Transmit Inverval Selection
 ## URL Message Segment Timeout Selection
-HELLO
