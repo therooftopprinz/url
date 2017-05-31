@@ -2,6 +2,7 @@
 #define URLSOCK_HPP_
 
 #include "Buffer.hpp"
+#include "RxSegmentAssembler.hpp"
 
 namespace urlsock
 {
@@ -54,9 +55,13 @@ struct IRxBufferManager
 class RxContext
 {
 public:
+    RxContext(IpPortMessageId ipPortMessageId, IEndPoint& enpoint)
     void receive(Buffer& data, uint32_t offset);
-    bool ready();
+    bool isUrlMessageReady();
+    Buffer claimUrlMessage();
 private:
+    IpPortMessageId mIpPortMessageId;
+    IEndPoint& mEnpoint;
     RxSegmentAssembler assembler;
     std::list<std::pair<Buffer, uint32_t>> rxTmpBuffer;
 };
