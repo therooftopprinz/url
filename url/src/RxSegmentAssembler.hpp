@@ -13,7 +13,7 @@ public:
     enum class EReceivedSegmentStatus {COMPLETE, INCOMPLETE, INCORRECT_RTX_DATA, INCORRECT_RTX_SIZE, DATA_OUTOFBOUNDS, DATA_OVERLAPPED};
     RxSegmentAssembler();
     ~RxSegmentAssembler();
-    void init(size_t size);
+    void initUrlMessageSize(size_t size);
     bool isInited();
     uint8_t* claim();
     const uint8_t* peek() const;

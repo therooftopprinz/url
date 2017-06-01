@@ -28,22 +28,22 @@ struct RxSegmentAssemblerTests : public ::testing::Test
 
 TEST_F(RxSegmentAssemblerTests, shouldCompleteWhenComplete)
 {
-    rxSegmentAssembler.init(1000);
+    rxSegmentAssembler.initUrlMessageSize(1000);
     Buffer rxSegment(1000);
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::COMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::COMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
 }
 
 TEST_F(RxSegmentAssemblerTests, shouldIncompleteThenCompleteWhenComplete)
 {
-    rxSegmentAssembler.init(1000);
+    rxSegmentAssembler.initUrlMessageSize(1000);
     Buffer rxSegment(200);
     Buffer rxSegment2(400);
     fillBufferWithRandomShit(rxSegment);
     fillBufferWithRandomShit(rxSegment2);
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 200));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::COMPLETE, rxSegmentAssembler.receive(rxSegment2, 600));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 200));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::COMPLETE, rxSegmentAssembler.receive(rxSegment2, 600));
 
     std::vector<uint8_t> expected;
     expected.insert(expected.end(), rxSegment.data(), rxSegment.data()+rxSegment.size());
@@ -57,16 +57,16 @@ TEST_F(RxSegmentAssemblerTests, shouldIncompleteThenCompleteWhenComplete)
 
 TEST_F(RxSegmentAssemblerTests, shouldNotErrorWhenReceivedAgainWithSameSizeAndData)
 {
-    rxSegmentAssembler.init(1000);
+    rxSegmentAssembler.initUrlMessageSize(1000);
     Buffer rxSegment(200);
     Buffer rxSegment2(400);
     fillBufferWithRandomShit(rxSegment);
     fillBufferWithRandomShit(rxSegment2);
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 600));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::COMPLETE, rxSegmentAssembler.receive(rxSegment, 200));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 600));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::COMPLETE, rxSegmentAssembler.receive(rxSegment, 200));
 
     std::vector<uint8_t> expected;
     expected.insert(expected.end(), rxSegment.data(), rxSegment.data()+rxSegment.size());
@@ -80,68 +80,68 @@ TEST_F(RxSegmentAssemblerTests, shouldNotErrorWhenReceivedAgainWithSameSizeAndDa
 
 TEST_F(RxSegmentAssemblerTests, shouldErrorWhenReceivedAgainWithDifferentSize)
 {
-    rxSegmentAssembler.init(1000);
+    rxSegmentAssembler.initUrlMessageSize(1000);
     Buffer rxSegment(200);
     Buffer rxSegment2(400);
     fillBufferWithRandomShit(rxSegment);
     fillBufferWithRandomShit(rxSegment2);
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 600));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCORRECT_RTX_SIZE, rxSegmentAssembler.receive(rxSegment2, 400));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 600));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCORRECT_RTX_SIZE, rxSegmentAssembler.receive(rxSegment2, 400));
 }
 
 TEST_F(RxSegmentAssemblerTests, shouldErrorWhenReceivedAgainWithDifferentData)
 {
-    rxSegmentAssembler.init(1000);
+    rxSegmentAssembler.initUrlMessageSize(1000);
     Buffer rxSegment(200);
     Buffer rxSegment2(400);
     Buffer rxSegment3(200);
     fillBufferWithRandomShit(rxSegment);
     fillBufferWithRandomShit(rxSegment2);
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 600));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCORRECT_RTX_DATA, rxSegmentAssembler.receive(rxSegment3, 400));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 600));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCORRECT_RTX_DATA, rxSegmentAssembler.receive(rxSegment3, 400));
 }
 
 TEST_F(RxSegmentAssemblerTests, shouldErrorWhenReceivedAgainWithOverlappedDataFromPrevious)
 {
-    rxSegmentAssembler.init(1000);
+    rxSegmentAssembler.initUrlMessageSize(1000);
     Buffer rxSegment(100);
     Buffer rxSegment2(20);
     fillBufferWithRandomShit(rxSegment);
     fillBufferWithRandomShit(rxSegment2);
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 200));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 100));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::DATA_OVERLAPPED, rxSegmentAssembler.receive(rxSegment2, 119));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 200));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 100));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::DATA_OVERLAPPED, rxSegmentAssembler.receive(rxSegment2, 119));
 }
 
 TEST_F(RxSegmentAssemblerTests, shouldErrorWhenReceivedAgainWithOverlappedDataFromNext)
 {
-    rxSegmentAssembler.init(1000);
+    rxSegmentAssembler.initUrlMessageSize(1000);
     Buffer rxSegment(100);
     Buffer rxSegment2(20);
     fillBufferWithRandomShit(rxSegment);
     fillBufferWithRandomShit(rxSegment2);
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 200));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 180));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::DATA_OVERLAPPED, rxSegmentAssembler.receive(rxSegment2, 161));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 200));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 180));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::DATA_OVERLAPPED, rxSegmentAssembler.receive(rxSegment2, 161));
 }
 
 TEST_F(RxSegmentAssemblerTests, shouldErrorWhenReceivedAgainWithOverlappedDataFromWholeNext)
 {
-    rxSegmentAssembler.init(1000);
+    rxSegmentAssembler.initUrlMessageSize(1000);
     Buffer rxSegment(100);
     Buffer rxSegment2(200);
     fillBufferWithRandomShit(rxSegment);
     fillBufferWithRandomShit(rxSegment2);
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 200));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
-    EXPECT_EQ(RxSegmentAssembler::EReceiveStatus::DATA_OVERLAPPED, rxSegmentAssembler.receive(rxSegment2, 150));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 200));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
+    EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::DATA_OVERLAPPED, rxSegmentAssembler.receive(rxSegment2, 150));
 }

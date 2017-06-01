@@ -27,7 +27,16 @@ private:
 class BufferView
 {
 public:
-    BufferView() = delete;
+    BufferView():
+        mData(nullptr),
+        mSize(0)
+    {}
+
+    BufferView(const BufferView& other):
+        mData(other.mData),
+        mSize(other.mSize)
+    {}
+
     BufferView(uint8_t* start, uint8_t* end):
         mData(start),
         mSize(uintptr_t(end)-uintptr_t(start))
@@ -37,6 +46,30 @@ public:
         mData(start),
         mSize(size)
     {}
+
+    static const BufferView createFrom(const uint8_t* start, size_t size)
+    {
+        const BufferView rv;
+        rv.mData = (uint8_t*)start;
+        rv.mSize = size;
+        return rv;
+    }
+
+    static const BufferView createFrom(const uint8_t* start, const uint8_t* end)
+    {
+        const BufferView rv;
+        rv.mData = (uint8_t*)start;
+        rv.mSize = uintptr_t(end)-uintptr_t(start);
+        return rv;
+    }
+
+
+    const BufferView& operator=(const BufferView& other) const
+    {
+        mData = other.mData;
+        mSize = other.mSize;
+        return *this;
+    }
 
     inline uint8_t* data()
     {
@@ -48,13 +81,25 @@ public:
         return mData;
     }
 
+    template<typename T>
+    T& get(size_t offset)
+    {
+        return *(T*)(mData+offset);
+    }
+
+    template<typename T>
+    const T& get(size_t offset) const
+    {
+        return *(T*)(mData+offset);
+    }
+
     inline size_t size() const
     {
         return mSize;
     }
 private:
-    uint8_t *mData;
-    size_t mSize;
+    mutable uint8_t *mData;
+    mutable size_t mSize;
 };
 
 class Buffer
@@ -75,6 +120,18 @@ public:
     /** Element access **/
     uint8_t* data();
     const uint8_t* data() const;
+
+    template<typename T>
+    T& get(size_t offset)
+    {
+        return *(T*)(mAllocData+offset);
+    }
+
+    template<typename T>
+    const T& get(size_t offset) const
+    {
+        return *(T*)(mAllocData+offset);
+    }
 
     /** Capacity **/
     bool empty();

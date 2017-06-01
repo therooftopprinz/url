@@ -20,7 +20,7 @@ RxSegmentAssembler::~RxSegmentAssembler()
     }
 }
 
-void RxSegmentAssembler::init(size_t size)
+void RxSegmentAssembler::initUrlMessageSize(size_t size)
 {
     if (mUrlMessage)
     {

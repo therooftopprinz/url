@@ -65,7 +65,7 @@ Indicates URL Segment Message. Payload is required. Last header before payload.
 
 Indicated that there is an error in the received URL Message Segment. When present, next header is always Acknowledgement Header. Last header.
 
-| \[0-3\](31:30) | \[0-3\](29:27) | \[4-7\](26:0) |
+| \[0-3\](31:30) | \[0-3\](29:27) | \[0-3\](26:0) |
 |:--------------:|:-------------:|:--------------:|
 | HT = 11        | ID=000        | INFO           |
 
