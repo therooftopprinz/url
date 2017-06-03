@@ -5,6 +5,10 @@ namespace urlsock
 
 UrlPduDisassembler::UrlPduDisassembler(ConstBufferView buffer):
     mPduData(buffer),
+    mHasDataHeader(false),
+    mHasInitialDataHeader(false),
+    mHasAckHeader(false),
+    mHasNackInfoHeader(false),
     mValidPdu(true)
 {
     size_t decodeCur = 0;
@@ -31,6 +35,12 @@ UrlPduDisassembler::UrlPduDisassembler(ConstBufferView buffer):
                     decodeCur += 4;
                     mMsgId = curData>>16;
                     mMac = curData&0xFFFF;
+                    curData = buffer.get<const uint32_t>(decodeCur);
+                    decodeCur += 4;
+                    mIntProtAlgorithm = curData&0xF;
+                    mCipherAlgorithm = (curData>>4)&0xF;
+                    mIsAcknowledgeMode = curData&0b100000000;
+                    mRetransmit = curData&0b1000000000;
                     break;
                 case 0b10:
                     mHasDataHeader = true;
@@ -86,7 +96,7 @@ bool UrlPduDisassembler::hasDataHeader()
     return mHasDataHeader;
 }
 
-bool UrlPduDisassembler::hasDataInitialHeader()
+bool UrlPduDisassembler::hasInitialDataHeader()
 {
     return mHasInitialDataHeader;
 }
@@ -121,9 +131,14 @@ uint16_t UrlPduDisassembler::getMac()
     return mMac;
 }
 
-bool UrlPduDisassembler::getAcknowledgeMode()
+bool UrlPduDisassembler::isAcknowledgmentEnabled()
 {
-    return mAcknowledgementMode;
+    return mIsAcknowledgeMode;
+}
+
+bool UrlPduDisassembler::isRetransmit()
+{
+    return mRetransmit;
 }
 
 uint8_t UrlPduDisassembler::getCipherAlgo()

@@ -13,17 +13,18 @@ class UrlPduDisassembler
 public:
     UrlPduDisassembler(ConstBufferView buffer);
     bool hasDataHeader();
-    bool hasDataInitialHeader();
+    bool hasInitialDataHeader();
     bool hasAckHeader();
     bool hasNackHeader();
     uint32_t getOffset();
     uint32_t getTotalMessageSize();
     uint16_t getMsgId();
     uint16_t getMac();
-    bool getAcknowledgeMode();
+    bool isAcknowledgmentEnabled();
     uint8_t getCipherAlgo();
     uint8_t getIntProtAlgo();
-    bool getAcknowledgementType();
+    bool isAcknowledged();
+    bool isRetransmit();
     ENackReason getNackReason();
     bool isValidPdu();
     Buffer getPayload();
@@ -39,7 +40,7 @@ private:
     bool mHasInitialDataHeader;
     uint32_t mUrlMessageSize;
     bool mRetransmit;
-    bool mAcknowledgementMode;
+    bool mIsAcknowledgeMode;
     uint8_t mCipherAlgorithm;
     uint8_t mIntProtAlgorithm;
     bool mHasAckHeader;

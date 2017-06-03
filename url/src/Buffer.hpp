@@ -24,6 +24,55 @@ private:
     std::string whatString;   
 };
 
+class Buffer
+{
+public:
+    // Buffer(BufferView);
+    Buffer(size_t bufferSize);
+    Buffer(const void* start, const void* end);
+    Buffer(const void* start, size_t size);
+    Buffer(const Buffer& other);
+    Buffer(Buffer&& other);
+    ~Buffer();
+
+    Buffer& operator=(const Buffer& other);
+    Buffer& operator=(Buffer&& other);
+    void assign(uint8_t* start, uint8_t* end);
+
+    /** Element access **/
+    uint8_t* data();
+    const uint8_t* data() const;
+
+    template<typename T>
+    T& get(size_t offset)
+    {
+        return *(T*)(mAllocData+offset);
+    }
+
+    template<typename T>
+    const T& get(size_t offset) const
+    {
+        return *(T*)(mAllocData+offset);
+    }
+
+    /** Capacity **/
+    bool empty();
+    size_t size() const;
+    void reserve(size_t newCap);
+    size_t capacity();
+    void shrink_to_fit();
+
+    /** Modifiers **/
+    void clear();
+    void resize(size_t newSize);
+
+private:
+    void validateAlloc();
+    size_t mDataSize;
+    size_t mAllocSize;
+    uint8_t *mAllocData;
+};
+
 template <typename T>
 class BbVvT
 {
@@ -31,6 +80,11 @@ public:
     BbVvT():
         mData(nullptr),
         mSize(0)
+    {}
+
+    BbVvT(const Buffer& buffer):
+        mData(buffer.data()),
+        mSize(buffer.size())
     {}
 
     BbVvT(const BbVvT<T>& other):
@@ -97,55 +151,6 @@ private:
 
 using BufferView = BbVvT<uint8_t*>;
 using ConstBufferView = BbVvT<const uint8_t*>;
-
-class Buffer
-{
-public:
-    // Buffer(BufferView);
-    Buffer(size_t bufferSize);
-    Buffer(const void* start, const void* end);
-    Buffer(const void* start, size_t size);
-    Buffer(const Buffer& other);
-    Buffer(Buffer&& other);
-    ~Buffer();
-
-    Buffer& operator=(const Buffer& other);
-    Buffer& operator=(Buffer&& other);
-    void assign(uint8_t* start, uint8_t* end);
-
-    /** Element access **/
-    uint8_t* data();
-    const uint8_t* data() const;
-
-    template<typename T>
-    T& get(size_t offset)
-    {
-        return *(T*)(mAllocData+offset);
-    }
-
-    template<typename T>
-    const T& get(size_t offset) const
-    {
-        return *(T*)(mAllocData+offset);
-    }
-
-    /** Capacity **/
-    bool empty();
-    size_t size() const;
-    void reserve(size_t newCap);
-    size_t capacity();
-    void shrink_to_fit();
-
-    /** Modifiers **/
-    void clear();
-    void resize(size_t newSize);
-
-private:
-    void validateAlloc();
-    size_t mDataSize;
-    size_t mAllocSize;
-    uint8_t *mAllocData;
-};
 
 } // namespace urlsock
 

@@ -30,7 +30,7 @@ TEST_F(UrlPduAssemblerTests, shouldCreateAck)
 {
     constexpr uint16_t MSG_ID = 1234;
     constexpr uint16_t MAC = 5129;
-    constexpr uint16_t OFFSET = 12345;
+    constexpr uint32_t OFFSET = 12345;
     pduAssembler.setAckHeader(12345, MSG_ID, MAC);
     auto bout = pduAssembler.create();
     EXPECT_EQ(OFFSET, bout.get<uint32_t>(0));

@@ -99,6 +99,7 @@ TEST_F(RxSegmentAssemblerTests, shouldErrorWhenReceivedAgainWithDifferentData)
     Buffer rxSegment3(200);
     fillBufferWithRandomShit(rxSegment);
     fillBufferWithRandomShit(rxSegment2);
+    fillBufferWithRandomShit(rxSegment3);
     EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 0));
     EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment, 400));
     EXPECT_EQ(RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE, rxSegmentAssembler.receive(rxSegment2, 600));
