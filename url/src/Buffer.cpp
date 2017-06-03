@@ -13,7 +13,7 @@ Buffer::Buffer(size_t bufferSize):
     validateAlloc();
 }
 
-Buffer::Buffer(uint8_t* start, uint8_t* end):
+Buffer::Buffer(const void* start, const void* end):
     mDataSize(uintptr_t(end) - uintptr_t(start)),
     mAllocSize(mDataSize),
     mAllocData((uint8_t*)std::malloc(mDataSize))
@@ -22,7 +22,7 @@ Buffer::Buffer(uint8_t* start, uint8_t* end):
     std::memcpy(mAllocData, start, mDataSize);
 }
 
-Buffer::Buffer(void* start,size_t size):
+Buffer::Buffer(const void* start,size_t size):
     mDataSize(size),
     mAllocSize(size),
     mAllocData((uint8_t*)std::malloc(size))

@@ -29,8 +29,8 @@ endif
 
 ## TARGET DEBUG #########################################################################
 
-BUILDDIR              := build/normal
-BUILDDIR_GCOV         := build/gcov
+BUILDDIR              := ../build/normal
+BUILDDIR_GCOV         := ../build/gcov
 
 URL_INCDIR_GCC     := $(addprefix -I, $(URL_INCDIR))
 URL_TESTINCDIR_GCC := $(addprefix -I, $(URL_TESTINCDIR))

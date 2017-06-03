@@ -2,7 +2,7 @@
 #define BUFFER_HPP_
 
 #include <cstdint>
-#include <exception>
+#include <stdexcept>
 #include <string>
 
 namespace urlsock
@@ -24,73 +24,66 @@ private:
     std::string whatString;   
 };
 
-class BufferView
+template <typename T>
+class BbVvT
 {
 public:
-    BufferView():
+    BbVvT():
         mData(nullptr),
         mSize(0)
     {}
 
-    BufferView(const BufferView& other):
+    BbVvT(const BbVvT<T>& other):
         mData(other.mData),
         mSize(other.mSize)
     {}
 
-    BufferView(uint8_t* start, uint8_t* end):
+    BbVvT(T start, T end):
         mData(start),
         mSize(uintptr_t(end)-uintptr_t(start))
     {}
 
-    BufferView(uint8_t* start, size_t size):
+    BbVvT(T start, size_t size):
         mData(start),
         mSize(size)
     {}
 
-    static const BufferView createFrom(const uint8_t* start, size_t size)
-    {
-        const BufferView rv;
-        rv.mData = (uint8_t*)start;
-        rv.mSize = size;
-        return rv;
-    }
-
-    static const BufferView createFrom(const uint8_t* start, const uint8_t* end)
-    {
-        const BufferView rv;
-        rv.mData = (uint8_t*)start;
-        rv.mSize = uintptr_t(end)-uintptr_t(start);
-        return rv;
-    }
-
-
-    const BufferView& operator=(const BufferView& other) const
+    BbVvT& operator=(const BbVvT<T>& other)
     {
         mData = other.mData;
         mSize = other.mSize;
         return *this;
     }
 
-    inline uint8_t* data()
+    inline T data()
     {
         return mData;
     }
 
-    inline const uint8_t* data() const
+    inline T data() const
     {
         return mData;
     }
 
-    template<typename T>
-    T& get(size_t offset)
+
+    template<typename Tr>
+    Tr& get(size_t offset)
     {
-        return *(T*)(mData+offset);
+        if((offset+sizeof(Tr))>mSize)
+        {
+            throw std::out_of_range("buffer out of range");
+        }
+        return *reinterpret_cast<Tr*>(mData+offset);
     }
 
-    template<typename T>
-    const T& get(size_t offset) const
+    template<typename Tr>
+    const Tr& get(size_t offset) const
     {
-        return *(T*)(mData+offset);
+        if((offset+sizeof(Tr))>mSize)
+        {
+            throw std::out_of_range("buffer out of range");
+        }
+        return *reinterpret_cast<Tr*>(mData+offset);
     }
 
     inline size_t size() const
@@ -98,17 +91,20 @@ public:
         return mSize;
     }
 private:
-    mutable uint8_t *mData;
-    mutable size_t mSize;
+    T mData;
+    size_t mSize;
 };
+
+using BufferView = BbVvT<uint8_t*>;
+using ConstBufferView = BbVvT<const uint8_t*>;
 
 class Buffer
 {
 public:
     // Buffer(BufferView);
     Buffer(size_t bufferSize);
-    Buffer(uint8_t* start, uint8_t* end);
-    Buffer(void* start, size_t size);
+    Buffer(const void* start, const void* end);
+    Buffer(const void* start, size_t size);
     Buffer(const Buffer& other);
     Buffer(Buffer&& other);
     ~Buffer();

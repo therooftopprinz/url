@@ -3,7 +3,7 @@
 #include <ctime>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <src/UrlPduCodec.hpp>
+#include <src/UrlPduAssembler.hpp>
 
 using namespace testing;
 using namespace urlsock;
@@ -46,7 +46,7 @@ TEST_F(UrlPduAssemblerTests, shouldCreateInitialData)
     constexpr uint16_t MAC = 14429;
 
     const uint8_t payload[] = {1,2,3,4,5,6,7,8,9,10};
-    const BufferView payloadView = BufferView::createFrom(payload, payload+10);
+    ConstBufferView payloadView = ConstBufferView(payload, payload+10);
     pduAssembler.setInitialDataHeader(URL_MESSAGE_SIZE, MSG_ID, MAC,
         false, true, 8, 9);
     pduAssembler.setPayload(payloadView);
@@ -69,7 +69,7 @@ TEST_F(UrlPduAssemblerTests, shouldCreateData)
     constexpr uint16_t MAC = 119;
     constexpr uint32_t OFFSET = 4321;
     const uint8_t payload[] = {1,2,3,4,5,6,7,8,9,10,11};
-    const BufferView payloadView = BufferView::createFrom(payload, payload+11);
+    ConstBufferView payloadView = ConstBufferView(payload, payload+11);
     pduAssembler.setDataHeader(OFFSET, MSG_ID, MAC);
     pduAssembler.setPayload(payloadView);
     auto bout = pduAssembler.create();

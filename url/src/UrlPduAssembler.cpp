@@ -1,5 +1,5 @@
-#include "UrlPduCodec.hpp"
 #include <cstring>
+#include "UrlPduAssembler.hpp"
 
 namespace urlsock
 {
@@ -46,7 +46,7 @@ void UrlPduAssembler::setNackInfoHeader(ENackReason reason)
     mNackReason = reason;
 }
 
-void UrlPduAssembler::setPayload(const BufferView& payload)
+void UrlPduAssembler::setPayload(ConstBufferView payload)
 {
     mPayload = payload;
 }
