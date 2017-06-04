@@ -2,13 +2,12 @@
 #include "ITxJobManager.hpp"
 #include "IRxBufferManager.hpp"
 #include "IEndPoint.hpp"
-#include "RxSegmentAssembler.hpp"
 #include "UrlPduDisassembler.hpp"
 #include "UrlPduAssembler.hpp"
 
 namespace urlsock
 {
-constexpr size_t udpMaxSize = 65536u;
+
 RxJob::RxJob(ITxJobManager& itxManager, IRxBufferManager& rxBufferManager, IEndPoint& endpoint):
     mItxManager(itxManager),
     mRxBufferManager(rxBufferManager),
@@ -24,14 +23,57 @@ RxJob::~RxJob()
     mReceiveThread.join();
 }
 
+void RxJob::processSegmentAssemblerReceived(UrlPduDisassembler& receivedPdu,
+    RxSegmentAssembler::EReceivedSegmentStatus rcvState,
+    std::map<IpPortMessageId, RxContext>::iterator rxContext, IpPort& senderIpPort)
+{
+    if (rcvState == RxSegmentAssembler::EReceivedSegmentStatus::COMPLETE)
+    {
+        auto rxUrlMessageData = rxContext->second.mRxSegmentAssembler.claim();
+        mRxBufferManager.enqueue(rxContext->first.first, std::move(rxUrlMessageData));
+        mRxContexts.erase(rxContext);
+    }
+    else if (rcvState == RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE)
+    {
+        UrlPduAssembler ackPdu;
+        BufferView txBuffer(mBufferTx, udpMaxSize);
+        ackPdu.setAckHeader(receivedPdu.getOffset(), receivedPdu.getMessageId(), receivedPdu.getMac());
+        auto ackPduRaw = ackPdu.createFrom(txBuffer);
+        mEndpoint.send(ackPduRaw, senderIpPort);
+    }
+    else
+    {
+        UrlPduAssembler nackPdu;
+        BufferView txBuffer(mBufferTx, udpMaxSize);
+        nackPdu.setAckHeader(receivedPdu.getOffset(), receivedPdu.getMessageId(), receivedPdu.getMac());
+        switch (rcvState)
+        {
+            case RxSegmentAssembler::EReceivedSegmentStatus::INCORRECT_RTX_DATA:
+                nackPdu.setNackInfoHeader(ENackReason::DUPLICATE_SEGMENT_MISMATCHED);
+                break;
+            case RxSegmentAssembler::EReceivedSegmentStatus::DATA_OUTOFBOUNDS:
+                nackPdu.setNackInfoHeader(ENackReason::RECEIVED_SEGMENT_OUT_OF_BOUND);
+                break;
+            case RxSegmentAssembler::EReceivedSegmentStatus::INCORRECT_RTX_SIZE:
+            case RxSegmentAssembler::EReceivedSegmentStatus::DATA_OVERLAPPED:
+                nackPdu.setNackInfoHeader(ENackReason::RECEIVED_SEGMENT_OVERLAPPED);
+                break;                       
+            default:
+                nackPdu.setNackInfoHeader(ENackReason(-1));
+                break;
+        }
+        auto nackPduRaw = nackPdu.createFrom(txBuffer);
+        mEndpoint.send(nackPduRaw, senderIpPort);
+    }
+}
+
 void RxJob::receiveThread()
 {
-    uint8_t buffer[udpMaxSize];
     IpPort senderIpPort;
     while (mReceiving.load())
     {
-        size_t receivedSize = mEndpoint.receive(BufferView(buffer, udpMaxSize), senderIpPort);
-        UrlPduDisassembler receivedPdu(ConstBufferView(buffer, receivedSize));
+        size_t receivedSize = mEndpoint.receive(BufferView(mBufferRx, udpMaxSize), senderIpPort);
+        UrlPduDisassembler receivedPdu(ConstBufferView(mBufferRx, receivedSize));
         auto ipPortMsg = std::make_pair(senderIpPort, receivedPdu.getMessageId());
         if (receivedPdu.hasAckHeader()&&receivedPdu.hasNackHeader())
         {
@@ -46,8 +88,9 @@ void RxJob::receiveThread()
             auto rxContext = mRxContexts.find(ipPortMsg);
             if (rxContext != mRxContexts.end())
             {
-                rxContext->second.mRxContext.receive(receivedPdu.getPayloadView(), receivedPdu.getOffset());
-                /** TODO: send ack/nack for the pdu**/
+                auto rcvState = rxContext->second.mRxSegmentAssembler.receive(receivedPdu.getPayloadView(),
+                    receivedPdu.getOffset());
+                processSegmentAssemblerReceived(receivedPdu, rcvState, rxContext, senderIpPort);
             }
             else
             {
@@ -56,11 +99,15 @@ void RxJob::receiveThread()
         }
         else if (receivedPdu.hasInitialDataHeader())
         {
-            auto& context = mRxContexts[ipPortMsg];
-            context.mRxSegmentAssembler.initUrlMessageSize(receivedPdu.getTotalMessageSize());
-            context.mRxSegmentAssembler.receive(receivedPdu.getPayloadView(), 0);
-            /** TODO: send ack/nack for the pdu**/
+            /** TODO: check cases when ipPortMsg already exist**/
+            auto rxContextInsertRes = mRxContexts.emplace(ipPortMsg, RxContext());
+            rxContextInsertRes.first->second.mRxSegmentAssembler.initUrlMessageSize(receivedPdu.getTotalMessageSize());
+            auto rcvState = rxContextInsertRes.first->second.mRxSegmentAssembler
+                .receive(receivedPdu.getPayloadView(),0);
+            processSegmentAssemblerReceived(receivedPdu, rcvState, rxContextInsertRes.first, senderIpPort);
         }
+
+        /** TODO: scheduled check here **/
     }
 }
 

@@ -21,15 +21,16 @@ public:
     void setNackInfoHeader(ENackReason reason);
     void setPayload(ConstBufferView payload);
     Buffer create();
+    BufferView createFrom(BufferView& buffer);
 
 private:
     inline size_t calculateHeaderSize();
-    inline void createDataHeader(Buffer& buffer);
-    inline void createInitialDataHeader(Buffer& buffer);
-    inline void createNackInfoHeader(Buffer& buffer);
-    inline void createAckHeader(Buffer& buffer);
-    inline void createHeaders(Buffer& buffer);
-    inline void putPayload(Buffer& buffer);
+    inline void createDataHeader(BufferView& buffer);
+    inline void createInitialDataHeader(BufferView& buffer);
+    inline void createNackInfoHeader(BufferView& buffer);
+    inline void createAckHeader(BufferView& buffer);
+    inline void createHeaders(BufferView& buffer);
+    inline void putPayload(BufferView& buffer);
     inline void validate();
 
     bool mHasDataHeader;

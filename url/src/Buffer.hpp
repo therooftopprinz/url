@@ -38,6 +38,7 @@ public:
     Buffer& operator=(const Buffer& other);
     Buffer& operator=(Buffer&& other);
     void assign(uint8_t* start, uint8_t* end);
+    void own(void* start, size_t size);
 
     /** Element access **/
     uint8_t* data();
@@ -83,6 +84,11 @@ public:
     {}
 
     BbVvT(const Buffer& buffer):
+        mData(buffer.data()),
+        mSize(buffer.size())
+    {}
+
+    BbVvT(Buffer& buffer):
         mData(buffer.data()),
         mSize(buffer.size())
     {}

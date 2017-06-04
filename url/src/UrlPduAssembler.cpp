@@ -56,9 +56,19 @@ Buffer UrlPduAssembler::create()
     validate();
     size_t pduSize = calculateHeaderSize()+mPayload.size();
     Buffer buffer(pduSize);
+    BufferView bv(buffer);
+    createHeaders(bv);
+    putPayload(bv);
+    return buffer;
+}
+
+BufferView UrlPduAssembler::createFrom(BufferView& buffer)
+{
+    validate();
+    size_t pduSize = calculateHeaderSize()+mPayload.size();
     createHeaders(buffer);
     putPayload(buffer);
-    return buffer;
+    return BufferView(buffer.data(), pduSize);
 }
 
 size_t UrlPduAssembler::calculateHeaderSize()
@@ -71,7 +81,7 @@ size_t UrlPduAssembler::calculateHeaderSize()
     return pduSize;
 }
 
-void UrlPduAssembler::createDataHeader(Buffer& buffer)
+void UrlPduAssembler::createDataHeader(BufferView& buffer)
 {
     buffer.get<uint32_t>(0) = 
         (0b10ul<<30) | (mOffset&0x3FFFFFFF);
@@ -79,7 +89,7 @@ void UrlPduAssembler::createDataHeader(Buffer& buffer)
         (mMsgId << 16) | (mMac);
 }
 
-void UrlPduAssembler::createInitialDataHeader(Buffer& buffer)
+void UrlPduAssembler::createInitialDataHeader(BufferView& buffer)
 {
     buffer.get<uint32_t>(0) = 
         (0b01ul<<30) | (mUrlMessageSize&0x3FFFFFFF);
@@ -93,7 +103,7 @@ void UrlPduAssembler::createInitialDataHeader(Buffer& buffer)
 
 }
 
-void UrlPduAssembler::createNackInfoHeader(Buffer& buffer)
+void UrlPduAssembler::createNackInfoHeader(BufferView& buffer)
 {
     buffer.get<uint32_t>(0) = 
         (0b11ul<<30) | (uint32_t(mNackReason)&0x3FFFFFFF);
@@ -102,14 +112,14 @@ void UrlPduAssembler::createNackInfoHeader(Buffer& buffer)
         (mMsgId << 16) | (mMac);
 }
 
-void UrlPduAssembler::createAckHeader(Buffer& buffer)
+void UrlPduAssembler::createAckHeader(BufferView& buffer)
 {
     buffer.get<uint32_t>(0) = mOffset&0x3FFFFFFF;
     buffer.get<uint32_t>(4) =
         (mMsgId << 16) | (mMac);
 }
 
-void UrlPduAssembler::createHeaders(Buffer& buffer)
+void UrlPduAssembler::createHeaders(BufferView& buffer)
 {
     if (mHasDataHeader)
     {
@@ -129,7 +139,7 @@ void UrlPduAssembler::createHeaders(Buffer& buffer)
     }
 }
 
-void UrlPduAssembler::putPayload(Buffer& buffer)
+void UrlPduAssembler::putPayload(BufferView& buffer)
 {
     size_t dataOffset = calculateHeaderSize();
     std::memcpy(buffer.data()+dataOffset, mPayload.data(), mPayload.size());

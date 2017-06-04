@@ -37,9 +37,10 @@ bool RxSegmentAssembler::isInited()
     return mUrlMessage;
 }
 
-uint8_t* RxSegmentAssembler::claim()
+Buffer RxSegmentAssembler::claim()
 {
-    uint8_t *rv = mUrlMessage;
+    Buffer rv;
+    rv.own(mUrlMessage, mUrlMessageTotalSize);
     mUrlMessage = nullptr;
     return rv;
 }

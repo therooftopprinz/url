@@ -15,7 +15,7 @@ public:
     ~RxSegmentAssembler();
     void initUrlMessageSize(size_t size);
     bool isInited();
-    uint8_t* claim();
+    Buffer claim();
     const uint8_t* peek() const;
     size_t size() const;
     size_t receivedSize() const;

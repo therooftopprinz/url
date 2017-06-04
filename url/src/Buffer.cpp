@@ -28,7 +28,7 @@ Buffer::Buffer(const void* start, const void* end):
     std::memcpy(mAllocData, start, mDataSize);
 }
 
-Buffer::Buffer(const void* start,size_t size):
+Buffer::Buffer(const void* start, size_t size):
     mDataSize(size),
     mAllocSize(size),
     mAllocData((uint8_t*)std::malloc(size))
@@ -85,6 +85,20 @@ Buffer& Buffer::operator=(const Buffer& other)
 Buffer& Buffer::operator=(Buffer&& other)
 {
     return *this;
+}
+
+void Buffer::own(void* start, size_t size)
+{
+    if (mAllocData)
+    {
+        free(mAllocData);
+        mDataSize = 0;
+        mAllocSize = 0;
+    }
+
+    mAllocData = (uint8_t*)mAllocData;
+    mDataSize = size;
+    mAllocSize = size;
 }
 
 void Buffer::assign(uint8_t* start, uint8_t* end)
