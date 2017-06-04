@@ -18,6 +18,12 @@ private:
     std::string mMessage;
 };
 
+enum class ESendResult {Ok, Unreachable, TooManyRetries};
+enum class EReceiveResult {Ok, TimeOut, Incomplete};
+using IpPort = uint64_t;
+using MessageId = uint32_t;
+using IpPortMessageId = std::pair<IpPort, MessageId>;
+
 } // namespace urlsock
 
 #endif
