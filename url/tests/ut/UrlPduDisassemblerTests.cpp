@@ -41,7 +41,7 @@ TEST_F(UrlPduDisassemblerTests, shouldCreateAckPdu)
     ASSERT_FALSE(pduDisassembler.hasInitialDataHeader());
     ASSERT_FALSE(pduDisassembler.hasNackHeader());
     EXPECT_EQ(OFFSET, pduDisassembler.getOffset());
-    EXPECT_EQ(MSG_ID, pduDisassembler.getMsgId());
+    EXPECT_EQ(MSG_ID, pduDisassembler.getMessageId());
     EXPECT_EQ(MAC, pduDisassembler.getMac());
 }
 
@@ -64,7 +64,7 @@ TEST_F(UrlPduDisassemblerTests, shouldDataPdu)
     ASSERT_FALSE(pduDisassembler.hasInitialDataHeader());
     ASSERT_FALSE(pduDisassembler.hasNackHeader());
     EXPECT_EQ(OFFSET, pduDisassembler.getOffset());
-    EXPECT_EQ(MSG_ID, pduDisassembler.getMsgId());
+    EXPECT_EQ(MSG_ID, pduDisassembler.getMessageId());
     EXPECT_EQ(MAC, pduDisassembler.getMac());
     ASSERT_EQ(expected.size(), pduDisassembler.getPayload().size());
     EXPECT_TRUE(!std::memcmp(expected.data(), pduDisassembler.getPayload().data(), expected.size()));
@@ -90,7 +90,7 @@ TEST_F(UrlPduDisassemblerTests, shouldInitialDataPdu)
     ASSERT_TRUE(pduDisassembler.hasInitialDataHeader());
     ASSERT_FALSE(pduDisassembler.hasNackHeader());
     EXPECT_EQ(MSG_SIZE, pduDisassembler.getTotalMessageSize());
-    EXPECT_EQ(MSG_ID, pduDisassembler.getMsgId());
+    EXPECT_EQ(MSG_ID, pduDisassembler.getMessageId());
     EXPECT_EQ(MAC, pduDisassembler.getMac());
     EXPECT_TRUE(pduDisassembler.isAcknowledgmentEnabled());
     EXPECT_TRUE(pduDisassembler.isRetransmit());

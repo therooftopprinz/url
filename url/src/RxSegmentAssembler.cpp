@@ -59,12 +59,7 @@ size_t RxSegmentAssembler::receivedSize() const
     return mUrlMessageTotalSize;
 }
 
-RxSegmentAssembler::EReceivedSegmentStatus RxSegmentAssembler::receive(const Buffer& data, uint32_t offset)
-{
-    return receive(data.data(), data.size(), offset);
-}
-
-RxSegmentAssembler::EReceivedSegmentStatus RxSegmentAssembler::receive(const BufferView& data, uint32_t offset)
+RxSegmentAssembler::EReceivedSegmentStatus RxSegmentAssembler::receive(const ConstBufferView& data, uint32_t offset)
 {
     return receive(data.data(), data.size(), offset);
 }

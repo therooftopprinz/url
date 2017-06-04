@@ -51,7 +51,7 @@ UrlPduDisassembler::UrlPduDisassembler(ConstBufferView buffer):
                     mMac = curData&0xFFFF;
                     break;
                 case 0b11:
-                    hanndleProtocolInformationHeaders(curData, decodeCur);
+                    handleProtocolInformationHeaders(curData);
                     continue;
                 default:
                     mValidPdu = false;
@@ -79,7 +79,7 @@ UrlPduDisassembler::UrlPduDisassembler(ConstBufferView buffer):
     }
 }
 
-void UrlPduDisassembler::hanndleProtocolInformationHeaders(uint32_t headerStart, size_t& decodeCur)
+void UrlPduDisassembler::handleProtocolInformationHeaders(uint32_t headerStart)
 {
     switch((headerStart>>27)&0b111)
     {
@@ -121,7 +121,7 @@ uint32_t UrlPduDisassembler::getTotalMessageSize()
     return mUrlMessageSize;
 }
 
-uint16_t UrlPduDisassembler::getMsgId()
+uint16_t UrlPduDisassembler::getMessageId()
 {
     return mMsgId;
 }
@@ -165,5 +165,11 @@ Buffer UrlPduDisassembler::getPayload()
 {
     return Buffer(mPayload.data(), mPayload.size());
 }
+
+ConstBufferView& UrlPduDisassembler::getPayloadView()
+{
+    return mPayload;
+}
+
 
 } // namespace urlsock

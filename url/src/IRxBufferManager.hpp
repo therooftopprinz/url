@@ -1,6 +1,7 @@
 #ifndef IRXBUFFERMANAGER_HPP_
 #define IRXBUFFERMANAGER_HPP_
 
+#include <list>
 #include "Buffer.hpp"
 
 namespace urlsock
@@ -14,8 +15,7 @@ struct IRxBufferManager
     virtual ~IRxBufferManager() = default;
     virtual void enqueue(IpPort ipPort, Buffer&& message) = 0;
     virtual RxObject dequeue() = 0;
-}
-
+};
 
 } // namespace urlsock
 

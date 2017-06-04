@@ -27,7 +27,7 @@ private:
 class Buffer
 {
 public:
-    // Buffer(BufferView);
+    Buffer();
     Buffer(size_t bufferSize);
     Buffer(const void* start, const void* end);
     Buffer(const void* start, size_t size);

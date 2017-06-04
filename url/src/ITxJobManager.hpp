@@ -15,6 +15,8 @@ struct ITxJobManager
     virtual std::shared_ptr<ITxJob> getITxJobByIpPortMessageId(IpPortMessageId ipPortMessage) = 0;
     virtual void createITxJob(IpPortMessageId ipPortMessage, std::shared_ptr<ITxJob>& itxJob);
     virtual void deleteITxJob(IpPortMessageId ipPortMessage);
+    virtual void reportAck(IpPortMessageId ipPortMessage, uint32_t offset);
+    virtual void reportNack(IpPortMessageId ipPortMessage,  uint32_t offset, ENackReason reason);
 };
 
 } // namespace urlsock

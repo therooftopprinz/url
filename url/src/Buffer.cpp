@@ -4,6 +4,12 @@
 
 namespace urlsock
 {
+Buffer::Buffer():
+    mDataSize(0),
+    mAllocSize(0),
+    mAllocData(nullptr)
+{
+}
 
 Buffer::Buffer(size_t bufferSize):
     mDataSize(bufferSize),
@@ -70,7 +76,6 @@ void Buffer::validateAlloc()
         throw AllocationFailed("Malloc Nulled.");
     }
 }
-
 
 Buffer& Buffer::operator=(const Buffer& other)
 {

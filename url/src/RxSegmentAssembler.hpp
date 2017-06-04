@@ -19,8 +19,7 @@ public:
     const uint8_t* peek() const;
     size_t size() const;
     size_t receivedSize() const;
-    EReceivedSegmentStatus receive(const Buffer& data, uint32_t offset);
-    EReceivedSegmentStatus receive(const BufferView& data, uint32_t offset);
+    EReceivedSegmentStatus receive(const ConstBufferView& data, uint32_t offset);
     EReceivedSegmentStatus receive(const uint8_t *start, size_t size, uint32_t offset);
 private:
     uint8_t *mUrlMessage;

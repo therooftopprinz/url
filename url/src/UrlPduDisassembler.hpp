@@ -18,7 +18,7 @@ public:
     bool hasNackHeader();
     uint32_t getOffset();
     uint32_t getTotalMessageSize();
-    uint16_t getMsgId();
+    uint16_t getMessageId();
     uint16_t getMac();
     bool isAcknowledgmentEnabled();
     uint8_t getCipherAlgo();
@@ -28,9 +28,10 @@ public:
     ENackReason getNackReason();
     bool isValidPdu();
     Buffer getPayload();
+    ConstBufferView& getPayloadView();
 
 private:
-    void hanndleProtocolInformationHeaders(uint32_t headerStart, size_t& decodeCur);
+    void handleProtocolInformationHeaders(uint32_t headerStart);
 
     ConstBufferView mPduData;
     bool mHasDataHeader;

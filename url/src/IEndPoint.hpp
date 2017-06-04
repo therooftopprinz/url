@@ -13,7 +13,8 @@ struct IEndPoint
     virtual void send(const BufferView& payload, IpPort target) = 0;
     virtual void send(const Buffer& payload, IpPort target) = 0;
     virtual void send(Buffer&& payload, IpPort target) = 0;
-    virtual void receive(Buffer& payload, IpPort& target) = 0;
+    virtual size_t receive(BufferView&& payload, IpPort& target) = 0;
+    virtual size_t receive(Buffer& payload, IpPort& target) = 0;
 };
 
 } // namespace urlsock

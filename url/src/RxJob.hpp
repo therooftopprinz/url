@@ -1,6 +1,7 @@
 #ifndef RXJOB_HPP_
 #define RXJOB_HPP_
 
+#include <atomic>
 #include <map>
 #include <thread>
 #include "Buffer.hpp"
@@ -13,7 +14,16 @@ class ITxJobManager;
 class IRxBufferManager;
 class IEndPoint;
 class RxSegmentAssembler;
- 
+
+struct RxContext
+{
+    RxSegmentAssembler mRxSegmentAssembler;
+    bool mAcknowledgeMode;
+    uint8_t mIntProtAlgo;
+    uint8_t mCipherAlgo;
+    uint8_t key[16];
+}
+
 class RxJob
 {
 public:
@@ -24,9 +34,10 @@ private:
 
     ITxJobManager& mItxManager;
     IRxBufferManager& mRxBufferManager;
-    IEndPoint& mEnpoint;
+    IEndPoint& mEndpoint;
+    std::atomic_bool mReceiving;
     std::thread mReceiveThread;
-    std::map<IpPortMessageId, RxSegmentAssembler> mRxContexts;
+    std::map<IpPortMessageId, RxContext> mRxContexts;
 };
 
 } // namespace urlsock
