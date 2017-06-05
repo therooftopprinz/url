@@ -73,6 +73,11 @@ void RxJob::receiveThread()
     while (mReceiving.load())
     {
         size_t receivedSize = mEndpoint.receive(BufferView(mBufferRx, udpMaxSize), senderIpPort);
+        if (!receivedSize)
+        {
+            continue;
+        }
+
         UrlPduDisassembler receivedPdu(ConstBufferView(mBufferRx, receivedSize));
         auto ipPortMsg = std::make_pair(senderIpPort, receivedPdu.getMessageId());
         if (receivedPdu.hasAckHeader()&&receivedPdu.hasNackHeader())
@@ -91,6 +96,9 @@ void RxJob::receiveThread()
                 auto rcvState = rxContext->second.mRxSegmentAssembler.receive(receivedPdu.getPayloadView(),
                     receivedPdu.getOffset());
                 processSegmentAssemblerReceived(receivedPdu, rcvState, rxContext, senderIpPort);
+                rxContext->second.mLastReceived = 
+                    std::chrono::duration_cast<std::chrono::microseconds>(
+                        std::chrono::high_resolution_clock::now().time_since_epoch()).count();
             }
             else
             {
@@ -107,7 +115,15 @@ void RxJob::receiveThread()
             processSegmentAssemblerReceived(receivedPdu, rcvState, rxContextInsertRes.first, senderIpPort);
         }
 
-        /** TODO: scheduled check here **/
+        for (auto i=mRxContexts.begin(); i!=mRxContexts.end(); i++)
+        {
+            const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+            if ((now-i->second.mLastReceived)>(20000000u)) /** TODO: configurable rx expiry**/
+            {
+                // mRxContexts.erase(i);   
+            }
+        }
     }
 }
 

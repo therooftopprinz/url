@@ -21,6 +21,7 @@ class UrlPduDisassembler;
 struct RxContext
 {
     RxSegmentAssembler mRxSegmentAssembler;
+    uint64_t mLastReceived;
     bool mAcknowledgeMode;
     uint8_t mIntProtAlgo;
     uint8_t mCipherAlgo;
