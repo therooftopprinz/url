@@ -96,7 +96,7 @@ void Buffer::own(void* start, size_t size)
         mAllocSize = 0;
     }
 
-    mAllocData = (uint8_t*)mAllocData;
+    mAllocData = (uint8_t*)start;
     mDataSize = size;
     mAllocSize = size;
 }

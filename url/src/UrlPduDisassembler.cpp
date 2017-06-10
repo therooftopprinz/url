@@ -31,6 +31,7 @@ UrlPduDisassembler::UrlPduDisassembler(ConstBufferView buffer):
                 case 0b01:
                     mHasInitialDataHeader = true;
                     mUrlMessageSize = curData&0x3FFFFFFF;
+                    mOffset = 0;
                     curData = buffer.get<const uint32_t>(decodeCur);
                     decodeCur += 4;
                     mMsgId = curData>>16;

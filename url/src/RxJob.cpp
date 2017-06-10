@@ -29,23 +29,29 @@ void RxJob::processSegmentAssemblerReceived(UrlPduDisassembler& receivedPdu,
 {
     if (rcvState == RxSegmentAssembler::EReceivedSegmentStatus::COMPLETE)
     {
+        UrlPduAssembler ackPdu;
+        BufferView txBuffer(mBufferTx, udpMaxSize);
+        ackPdu.setAckHeader(receivedPdu.getOffset(), receivedPdu.getMessageId(), 0);
+        auto ackPduRaw = ackPdu.createFrom(txBuffer);
+        mEndpoint.send(ackPduRaw, senderIpPort);
+
         auto rxUrlMessageData = rxContext->second.mRxSegmentAssembler.claim();
         mRxBufferManager.enqueue(rxContext->first.first, std::move(rxUrlMessageData));
         mRxContexts.erase(rxContext);
     }
-    else if (rcvState == RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE)
+    else if (rxContext->second.mAcknowledgeMode && rcvState == RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE)
     {
         UrlPduAssembler ackPdu;
         BufferView txBuffer(mBufferTx, udpMaxSize);
-        ackPdu.setAckHeader(receivedPdu.getOffset(), receivedPdu.getMessageId(), receivedPdu.getMac());
+        ackPdu.setAckHeader(receivedPdu.getOffset(), receivedPdu.getMessageId(), 0);
         auto ackPduRaw = ackPdu.createFrom(txBuffer);
         mEndpoint.send(ackPduRaw, senderIpPort);
     }
-    else
+    else if(rxContext->second.mAcknowledgeMode)
     {
         UrlPduAssembler nackPdu;
         BufferView txBuffer(mBufferTx, udpMaxSize);
-        nackPdu.setAckHeader(receivedPdu.getOffset(), receivedPdu.getMessageId(), receivedPdu.getMac());
+        nackPdu.setAckHeader(receivedPdu.getOffset(), receivedPdu.getMessageId(), 0);
         switch (rcvState)
         {
             case RxSegmentAssembler::EReceivedSegmentStatus::INCORRECT_RTX_DATA:
@@ -72,6 +78,7 @@ void RxJob::receiveThread()
     IpPort senderIpPort;
     while (mReceiving.load())
     {
+        /** NOTE: Optimal socket is blocking with timeout**/
         size_t receivedSize = mEndpoint.receive(BufferView(mBufferRx, udpMaxSize), senderIpPort);
         if (!receivedSize)
         {
@@ -121,7 +128,7 @@ void RxJob::receiveThread()
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();
             if ((now-i->second.mLastReceived)>(20000000u)) /** TODO: configurable rx expiry**/
             {
-                // mRxContexts.erase(i);   
+                mRxContexts.erase(i); 
             }
         }
     }
