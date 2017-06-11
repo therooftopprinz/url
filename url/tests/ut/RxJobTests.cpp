@@ -128,6 +128,52 @@ TEST_F(RxJobTests, shouldSendManySegmentUrlMessage)
 
     auto ack0 = createAck(0, MSG_ID, 0);
     auto ack100 = createAck(100, MSG_ID, 0);
+    auto ack200 = createAck(200, MSG_ID, 0);
+    auto ack300 = createAck(300, MSG_ID, 0);
+    auto ack400 = createAck(400, MSG_ID, 0);
+    auto ack500 = createAck(500, MSG_ID, 0);
+    auto ack600 = createAck(600, MSG_ID, 0);
+
+    MessageMatcher ack0matcher(ack0, ipPort);
+    MessageMatcher ack100matcher(ack100, ipPort);
+    MessageMatcher ack200matcher(ack200, ipPort);
+    MessageMatcher ack300matcher(ack300, ipPort);
+    MessageMatcher ack400matcher(ack400, ipPort);
+    MessageMatcher ack500matcher(ack500, ipPort);
+    MessageMatcher ack600matcher(ack600, ipPort);
+
+    auto sent = combineBuffer(toSend);
+    EXPECT_CALL(rxBufferManager, enqueue_rvalHack(ipPort, IsBufferEq(sent)));
+
+    endPoint.expectSend(1, 0, false, 1, ack0matcher.get(), DefaultAction::get());
+    endPoint.expectSend(2, 1, false, 1, ack100matcher.get(), DefaultAction::get());
+    endPoint.expectSend(3, 2, false, 1, ack200matcher.get(), DefaultAction::get());
+    endPoint.expectSend(4, 3, false, 1, ack300matcher.get(), DefaultAction::get());
+    endPoint.expectSend(5, 4, false, 1, ack400matcher.get(), DefaultAction::get());
+    endPoint.expectSend(6, 5, false, 1, ack500matcher.get(), DefaultAction::get());
+    endPoint.expectSend(7, 6, false, 1, ack600matcher.get(), DefaultAction::get());
+
+    endPoint.toReceive(createInitialDataPdu(toSend[0], MSG_SIZE, MSG_ID), ipPort);
+    endPoint.toReceive(createDataPdu(toSend[1], 100, MSG_ID), ipPort);
+    endPoint.toReceive(createDataPdu(toSend[2], 200, MSG_ID), ipPort);
+    endPoint.toReceive(createDataPdu(toSend[3], 300, MSG_ID), ipPort);
+    endPoint.toReceive(createDataPdu(toSend[4], 400, MSG_ID), ipPort);
+    endPoint.toReceive(createDataPdu(toSend[5], 500, MSG_ID), ipPort);
+    endPoint.toReceive(createDataPdu(toSend[6], 600, MSG_ID), ipPort);
+
+    endPoint.waitForAllSending(100.0);
+}
+
+TEST_F(RxJobTests, shouldSendOutOfOrdeSresgmentUrlMessage)
+{
+    constexpr uint16_t MSG_ID = 42u;
+    constexpr uint16_t MSG_SIZE = 601u;
+    auto toSend = createUrlMessage(MSG_SIZE, 6);
+
+    IpPort ipPort = IpPorter(127,0,0,1,6969);
+
+    auto ack0 = createAck(0, MSG_ID, 0);
+    auto ack100 = createAck(100, MSG_ID, 0);
     auto ack400 = createAck(400, MSG_ID, 0);
     auto ack300 = createAck(300, MSG_ID, 0);
     auto ack600 = createAck(600, MSG_ID, 0);
@@ -160,13 +206,8 @@ TEST_F(RxJobTests, shouldSendManySegmentUrlMessage)
     endPoint.toReceive(createDataPdu(toSend[6], 600, MSG_ID), ipPort);
     endPoint.toReceive(createDataPdu(toSend[5], 500, MSG_ID), ipPort);
     endPoint.toReceive(createDataPdu(toSend[2], 200, MSG_ID), ipPort);
-    // std::this_thread::sleep_for(std::chrono::seconds(3600));
+
     endPoint.waitForAllSending(100.0);
-}
-
-TEST_F(RxJobTests, shouldSendOutOfOrdeSresgmentUrlMessage)
-{
-
 }
 
 // Test reception of Url message with one segment
