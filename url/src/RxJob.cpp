@@ -117,18 +117,25 @@ void RxJob::receiveThread()
             /** TODO: check cases when ipPortMsg already exist**/
             auto rxContextInsertRes = mRxContexts.emplace(ipPortMsg, RxContext());
             rxContextInsertRes.first->second.mRxSegmentAssembler.initUrlMessageSize(receivedPdu.getTotalMessageSize());
+            rxContextInsertRes.first->second.mAcknowledgeMode = receivedPdu.isAcknowledgmentEnabled();
+            rxContextInsertRes.first->second.mLastReceived = std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
             auto rcvState = rxContextInsertRes.first->second.mRxSegmentAssembler
                 .receive(receivedPdu.getPayloadView(),0);
             processSegmentAssemblerReceived(receivedPdu, rcvState, rxContextInsertRes.first, senderIpPort);
         }
 
-        for (auto i=mRxContexts.begin(); i!=mRxContexts.end(); i++)
+        for (auto i=mRxContexts.begin(); i!=mRxContexts.end();)
         {
             const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();
             if ((now-i->second.mLastReceived)>(20000000u)) /** TODO: configurable rx expiry**/
             {
-                mRxContexts.erase(i); 
+                mRxContexts.erase(i++); 
+            }
+            else
+            {
+                i++;
             }
         }
     }

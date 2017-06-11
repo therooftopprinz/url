@@ -25,6 +25,62 @@ MATCHER_P(IsBufferEq, b, "")
     return rv;
 }
 
+class Matcher
+{
+public:
+    MatcherFunctor get()
+    {
+        using std::placeholders::_1;
+        using std::placeholders::_2;
+        using std::placeholders::_3;
+        return std::bind(&Matcher::match, this, _1, _2, _3);
+    }
+protected:
+    virtual bool match(const void *buffer, size_t size, IpPort IpPort)
+    {
+        return false;
+    }
+};
+
+class MessageMatcher : public Matcher
+{
+public:
+    MessageMatcher(Buffer msg, IpPort ipPort):
+        mMsg(msg),
+        mIpPort(ipPort)
+    {}
+
+    void set(Buffer msg, IpPort ipPort)
+    {
+        mMsg = msg;
+        mIpPort = ipPort;
+    }
+
+private:
+    bool match(const void *buffer, size_t size, IpPort ipPort)
+    {
+        // log << logger::WARNING << "Trying full match with:";
+        // utils::printRaw(msg.data(), msg.size());
+        if(mMsg.size()!=size || mIpPort!=ipPort)
+        {            
+            // log << logger::WARNING << "Inequal sizes!";
+            return false;
+        }
+        if (!std::memcmp(buffer, mMsg.data(), size))
+        {
+            pbuff(mMsg.data(), mMsg.size());
+            std::cout << "Send: sent and expected." << std::endl;
+            return true;
+        }
+
+        // log << logger::WARNING << "Message didn't match. ";
+        return false;
+    }
+
+    Buffer mMsg;
+    IpPort mIpPort;
+};
+
 } // namespace urlsock
 
 #endif

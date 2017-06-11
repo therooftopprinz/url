@@ -14,11 +14,11 @@ URL_LIB_TARGET      := ../bin
 
 #The Directories, Source, Includes, Objects, Binary and Resources
 URL_SRCDIR         := src
-URL_UTDIR          := tests/ut
+URL_TESTDIR          := tests/
 
 URL_INCDIR         := .
 URL_TESTINCDIR     := $(URL_INCDIR) ../gtest
-URL_UT_LD          := pthread m
+URL_TEST_LD          := pthread m
 URL_LD          := pthread m
 
 TESTFLAG			  :=
@@ -30,14 +30,14 @@ endif
 ## TARGET DEBUG #########################################################################
 
 BUILDDIR              := ../build/normal
-BUILDDIR_GCOV         := ../build/gcov
+BUILDDIR_GCOV         := ../build/gcovs
 
 URL_INCDIR_GCC     := $(addprefix -I, $(URL_INCDIR))
 URL_TESTINCDIR_GCC := $(addprefix -I, $(URL_TESTINCDIR))
-URL_UT_LD_GCC 	  := $(addprefix -l, $(URL_UT_LD))
-URL_LD_GCC 	  := $(addprefix -l, $(URL_UT_LD))
+URL_TEST_LD_GCC 	  := $(addprefix -l, $(URL_TEST_LD))
+URL_LD_GCC 	  := $(addprefix -l, $(URL_TEST_LD))
 URL_SOURCES        := $(shell find $(URL_SRCDIR) -type f -name *.cpp -not -name main.cpp)
-URL_TEST_SOURCES   := $(shell find $(URL_UTDIR) -type f -name *.cpp)
+URL_TEST_SOURCES   := $(shell find $(URL_TESTDIR) -type f -name *.cpp)
 URL_OBJECTS        := $(addprefix $(BUILDDIR)/, $(URL_SOURCES:.cpp=.cpp.o))
 URL_OBJECTS_GCOV   := $(addprefix $(BUILDDIR_GCOV)/, $(URL_SOURCES:.cpp=.cpp.o))
 URL_TESTS_OBJECTS  	   := $(addprefix $(BUILDDIR)/, $(URL_TEST_SOURCES:.cpp=.cpp.o))
@@ -69,30 +69,30 @@ $(URL_OBJECTS): $(BUILDDIR)/%.cpp.o : %.cpp
 
 ## TARGET url UT #########################################################################
 
-url_ut: $(GTEST) $(PTREE_STATIC_LIB) $(URL_OBJECTS) $(URL_TESTS_OBJECTS)
+url_test: $(GTEST) $(PTREE_STATIC_LIB) $(URL_OBJECTS) $(URL_TESTS_OBJECTS)
 	@mkdir -p $(URL_TARGET)
-	@echo Linking $(URL_TARGET)/url_ut
-	@$(CC) -g $(GTEST) $(URL_UT_LD_GCC) $(URL_OBJECTS) $(URL_TESTS_OBJECTS) $(PTREE_STATIC_LIB) -o $(URL_TARGET)/url_ut
+	@echo Linking $(URL_TARGET)/url_test
+	@$(CC) -g $(GTEST) $(URL_TEST_LD_GCC) $(URL_OBJECTS) $(URL_TESTS_OBJECTS) $(PTREE_STATIC_LIB) -o $(URL_TARGET)/url_test
 
-url_ut_run: url_ut
-	$(URL_TARGET)/url_ut $(TESTFLAG)
+url_test_run: url_test
+	$(URL_TARGET)/url_test $(TESTFLAG)
 
-url_ut_valgrind_run: url_ut
-	valgrind --leak-check=full --show-leak-kinds=all -v $(URL_TARGET)/url_ut $(TESTFLAG)
+url_test_valgrind_run: url_test
+	valgrind --leak-check=full --show-leak-kinds=all -v $(URL_TARGET)/url_test $(TESTFLAG)
 
-url_ut_valgrind_run_detailed: url_ut
-	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all -v $(URL_TARGET)/url_ut $(TESTFLAG)
+url_test_valgrind_run_detailed: url_test
+	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all -v $(URL_TARGET)/url_test $(TESTFLAG)
 
 $(URL_TESTS_OBJECTS): $(BUILDDIR)/%.cpp.o : %.cpp
 	@mkdir -p $(@D)
 	@echo "Building TEST" $@
 	@$(CC) $(CFLAGS) $(URL_TESTINCDIR_GCC) -MMD -g -c $(patsubst $(BUILDDIR)/%.cpp.o,%.cpp,$@) -o $@
 
-clean_url_ut:
+clean_url_test:
 	echo cleaning ut
-	find $(BUILDDIR)/$(URL_UTDIR) -type f -name *.cpp.o -exec rm {} \;
+	find $(BUILDDIR)/$(URL_TESTDIR) -type f -name *.cpp.o -exec rm {} \;
 
-clean_url: clean_url_ut
+clean_url: clean_url_test
 	echo cleaning url
 	find $(BUILDDIR)/$(URL_SRCDIR) -type f -name *.cpp.o -exec rm {} \;
 
@@ -102,5 +102,5 @@ clean_gcov:
 	find $(BUILDDIR_GCOV) -type f -name *.gcda -exec rm {} \;
 	find $(BUILDDIR_GCOV) -type f -name *.gcno -exec rm {} \;
 
-clean: clean_client_ut clean_client clean_url_ut clean_url clean_gcov
+clean: clean_client_test clean_client clean_url_test clean_url clean_gcov
 	echo All cleaned

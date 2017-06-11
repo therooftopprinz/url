@@ -23,7 +23,6 @@ public:
     bool isAcknowledgmentEnabled();
     uint8_t getCipherAlgo();
     uint8_t getIntProtAlgo();
-    bool isAcknowledged();
     bool isRetransmit();
     ENackReason getNackReason();
     bool isValidPdu();
