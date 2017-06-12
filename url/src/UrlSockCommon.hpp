@@ -7,6 +7,8 @@
 namespace urlsock
 {
 
+constexpr size_t UDP_MAX_SIZE = 65536u;
+
 enum class ENackReason{DUPLICATE_SEGMENT_MISMATCHED, RECEIVED_SEGMENT_OVERLAPPED, RECEIVED_SEGMENT_OUT_OF_BOUND};
 
 class BadCall : public std::exception

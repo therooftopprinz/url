@@ -68,7 +68,6 @@ struct RxJobTests : public Test
         return rv;
     }
 
-
     Buffer createAck(uint32_t offset, uint16_t messageId, uint16_t mac)
     {
         UrlPduAssembler ackPdu;
@@ -118,6 +117,7 @@ TEST_F(RxJobTests, shouldSendOneSegmentUrlMessage)
 
     endPoint.waitForAllSending(100.0);
 }
+
 TEST_F(RxJobTests, shouldSendManySegmentUrlMessage)
 {
     constexpr uint16_t MSG_ID = 42u;
@@ -210,6 +210,4 @@ TEST_F(RxJobTests, shouldSendOutOfOrdeSresgmentUrlMessage)
     endPoint.waitForAllSending(100.0);
 }
 
-// Test reception of Url message with one segment
-// Test reception of Url message with many segments
-// Test reception of Url message with out of order segments
+/** TODO: Nack cases **/

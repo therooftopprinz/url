@@ -30,7 +30,7 @@ void RxJob::processSegmentAssemblerReceived(UrlPduDisassembler& receivedPdu,
     if (rcvState == RxSegmentAssembler::EReceivedSegmentStatus::COMPLETE)
     {
         UrlPduAssembler ackPdu;
-        BufferView txBuffer(mBufferTx, udpMaxSize);
+        BufferView txBuffer(mBufferTx, UDP_MAX_SIZE);
         ackPdu.setAckHeader(receivedPdu.getOffset(), receivedPdu.getMessageId(), 0);
         auto ackPduRaw = ackPdu.createFrom(txBuffer);
         mEndpoint.send(ackPduRaw, senderIpPort);
@@ -42,7 +42,7 @@ void RxJob::processSegmentAssemblerReceived(UrlPduDisassembler& receivedPdu,
     else if (rxContext->second.mAcknowledgeMode && rcvState == RxSegmentAssembler::EReceivedSegmentStatus::INCOMPLETE)
     {
         UrlPduAssembler ackPdu;
-        BufferView txBuffer(mBufferTx, udpMaxSize);
+        BufferView txBuffer(mBufferTx, UDP_MAX_SIZE);
         ackPdu.setAckHeader(receivedPdu.getOffset(), receivedPdu.getMessageId(), 0);
         auto ackPduRaw = ackPdu.createFrom(txBuffer);
         mEndpoint.send(ackPduRaw, senderIpPort);
@@ -50,7 +50,7 @@ void RxJob::processSegmentAssemblerReceived(UrlPduDisassembler& receivedPdu,
     else if(rxContext->second.mAcknowledgeMode)
     {
         UrlPduAssembler nackPdu;
-        BufferView txBuffer(mBufferTx, udpMaxSize);
+        BufferView txBuffer(mBufferTx, UDP_MAX_SIZE);
         nackPdu.setAckHeader(receivedPdu.getOffset(), receivedPdu.getMessageId(), 0);
         switch (rcvState)
         {
@@ -79,7 +79,7 @@ void RxJob::receiveThread()
     while (mReceiving.load())
     {
         /** NOTE: Optimal socket is blocking with timeout**/
-        size_t receivedSize = mEndpoint.receive(BufferView(mBufferRx, udpMaxSize), senderIpPort);
+        size_t receivedSize = mEndpoint.receive(BufferView(mBufferRx, UDP_MAX_SIZE), senderIpPort);
         if (!receivedSize)
         {
             continue;

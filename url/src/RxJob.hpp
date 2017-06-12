@@ -11,8 +11,6 @@
 namespace urlsock
 {
 
-constexpr size_t udpMaxSize = 65536u;
-
 class ITxJobManager;
 class IRxBufferManager;
 class IEndPoint;
@@ -44,8 +42,8 @@ private:
     std::atomic_bool mReceiving;
     std::thread mReceiveThread;
     std::map<IpPortMessageId, RxContext> mRxContexts;
-    uint8_t mBufferRx[udpMaxSize];
-    uint8_t mBufferTx[udpMaxSize];
+    uint8_t mBufferRx[UDP_MAX_SIZE];
+    uint8_t mBufferTx[UDP_MAX_SIZE];
 };
 
 } // namespace urlsock
