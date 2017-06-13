@@ -8,64 +8,53 @@ TxJob::TxJob(const ConstBufferView& buffer, IEndPoint& endpoint, IpPortMessageId
     mEndpoint(endpoint),
     mMsgId(ipPortMessage.second),
     mIpPort(ipPortMessage.first),
-    mSendLooping(true),
     mAcknowledgedMode(acknowledgedMode),
+    mFirstAcked(false),
+    mAckReceived(false),
+    mNearestExpiry(static_cast<uint64_t>(-1)),
     mNextOffset(0),
     mRetryCount(0),
-    mTimeoutBias(0.0)
+    mTimeoutBias(0.0),
+    mMaxConsequentSending(10)
 {
 }
 
-
-    // const ConstBufferView& mMessage;
-    // IEndPoint& mEndpoint;
-    // uint16_t mMsgId;
-    // IpPort mIpPort;
-    // bool mSendLooping;
-    // bool mAcknowledgedMode;
-    // std::map<uint32_t,TxContext> mTxContextOffsetMap;
-    // std::mutex mTxContextLock;
-    // std::condition_variable mTxContextCv;
-    // uint32_t mNextOffset;
-    // uint32_t mRetryCount;
-    // double  mTimeoutBias;
-    // uint8_t mBufferTx[UDP_MAX_SIZE];
-
 void TxJob::eventAckReceived(uint32_t offset)
 {
-    std::lock_guard<std::mutex> guard(mTxContextLock);
-    auto found = mTxContextOffsetMap.find(offset);
-    if (found == mTxContextOffsetMap.end())
     {
-        /** TODO: ack not in list**/
-        return;
+        std::lock_guard<std::mutex> guard(mTxContextLock);
+        if (!offset)
+        {
+            mFirstAcked = true;
+        }
+        auto found = mTxContextOffsetMap.find(offset);
+        if (found == mTxContextOffsetMap.end())
+        {
+            /** TODO: ack not in list**/
+            return;
+        }
+        mTxContextOffsetMap.erase(found);
+        mAckReceived = true;
     }
-    mTxContextOffsetMap.erase(found);
+    mTxContextCv.notify_one();
+}
+
+bool TxJob::hasSchedulable()
+{
+    std::lock_guard<std::mutex> guard(mTxContextLock);
+    if (!mTxContextOffsetMap.empty() || mNextOffset < mMessage.size())
+    {
+        return true;
+    }
+    return false;
 }
 
 void TxJob::run()
 {
-    while (mSendLooping)
+    sendFirst();
+    while (hasSchedulable())
     {
-        {
-            std::lock_guard<std::mutex> guard(mTxContextLock);
-            if (mTxContextOffsetMap.empty())
-            {
-                if (!mNextOffset)
-                {
-                    sendFirst();
-                }
-                else if (mNextOffset >= mMessage.size())
-                {
-                    mSendLooping = false;
-                    continue;
-                }
-                else
-                {
-                    sendBatch();
-                }
-            }
-        }
+        scheduledSend();
         scheduledResend();
     }
 }
@@ -101,9 +90,19 @@ void TxJob::sendFirst()
     send(pdu, sendSize);
 }
 
-void TxJob::sendBatch()
+void TxJob::scheduledSend()
 {
-    for (auto i=0u; i<10 && mNextOffset<mMessage.size(); i++) /** TODO: base batch size to channel quality**/
+    std::lock_guard<std::mutex> guard(mTxContextLock);
+    if (!mFirstAcked)
+    {
+        return;
+    }
+    if (mTxContextOffsetMap.size() >= mMaxConsequentSending)
+    {
+        return;
+    }
+    auto nToSend = mMaxConsequentSending-mTxContextOffsetMap.size();
+    for (auto i=0u; i<nToSend && mNextOffset<mMessage.size(); i++)
     {
         auto sendSize = 300; /** TODO: base this on channel quality**/
         UrlPduAssembler pdu;
@@ -115,7 +114,41 @@ void TxJob::sendBatch()
 
 void TxJob::scheduledResend()
 {
+    std::unique_lock<std::mutex> lock(mTxContextLock);
+    auto twait = 1000u;
+    mTxContextCv.wait_for(lock, std::chrono::microseconds(twait),
+        [this]()
+        {
+            return mAckReceived;
+        });
 
+    if (mAckReceived)
+    {
+        const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+        for (auto& i : mTxContextOffsetMap)
+        {
+            const auto tdiff = now - i.second.mTimeSent;
+            if (tdiff > 500000) /** TODO: timeout based on channel quality**/
+            {
+                const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+                i.second.mTimeSent = now;
+                UrlPduAssembler pdu;
+                pdu.setDataHeader(i.first, mMsgId, 0);
+                pdu.setPayload(ConstBufferView(mMessage.data()+i.first, i.second.mSegmentSize));
+                BufferView txBuffer(mBufferTx, UDP_MAX_SIZE);
+                auto pduRaw = pdu.createFrom(txBuffer);
+                mEndpoint.send(pduRaw, mIpPort);
+            }
+            else if (tdiff < mNearestExpiry)
+            {
+                mNearestExpiry = now;
+            }
+        }
+
+        mAckReceived = false;
+    }
 }
 
 } // namespace urlsock

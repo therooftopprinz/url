@@ -119,8 +119,6 @@ size_t IEndPointMock::receiveCommon(uint8_t *data, size_t size, IpPort& port)
 {
     std::unique_lock<std::mutex> lock(mToReceiveMutex);
     mToReceiveCv.wait_for(lock, std::chrono::milliseconds(100), [this](){return !mToReceive.empty();});
-    lock.unlock();
-    lock.lock();
     if (mToReceive.empty())
     {
         return 0;
