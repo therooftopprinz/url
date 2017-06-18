@@ -103,9 +103,12 @@ void RxJob::receiveThread()
                 auto rcvState = rxContext->second.mRxSegmentAssembler.receive(receivedPdu.getPayloadView(),
                     receivedPdu.getOffset());
                 processSegmentAssemblerReceived(receivedPdu, rcvState, rxContext, senderIpPort);
-                rxContext->second.mLastReceived = 
-                    std::chrono::duration_cast<std::chrono::microseconds>(
-                        std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+                if (rcvState != RxSegmentAssembler::EReceivedSegmentStatus::COMPLETE)
+                {   
+                    rxContext->second.mLastReceived = 
+                        std::chrono::duration_cast<std::chrono::microseconds>(
+                            std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+                }
             }
             else
             {

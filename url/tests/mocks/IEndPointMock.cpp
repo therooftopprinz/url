@@ -36,7 +36,8 @@ void IEndPointMock::toReceive(Buffer buffer, IpPort port)
 }
 
 void IEndPointMock::expectSend(uint32_t id, uint32_t prerequisite, bool chainable, uint32_t cardinality,
-    std::function<bool(const void *buffer, size_t size, IpPort ipPort)> matcher, std::function<void()> action)
+    std::function<bool(const void *buffer, size_t size, IpPort ipPort)> matcher,
+    std::function<void(const void *buffer, size_t size, IpPort ipPort)> action)
 {
     ExpectationContainer con;
     con.id = id;
@@ -93,7 +94,7 @@ size_t IEndPointMock::sendCommon(const uint8_t* buffer, size_t size, IpPort ipPo
         {
             std::cout << "Matched! id:" << i.id << std::endl;
             i.occurence++;
-            i.action();
+            i.action(buffer, size, ipPort);
             matched = true;
             if (!i.chainable)
             {

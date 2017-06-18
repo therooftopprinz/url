@@ -16,7 +16,7 @@ RxSegmentAssembler::~RxSegmentAssembler()
 {
     if (mUrlMessage)
     {
-        delete[] mUrlMessage;
+        free(mUrlMessage);
     }
 }
 
@@ -24,11 +24,11 @@ void RxSegmentAssembler::initUrlMessageSize(size_t size)
 {
     if (mUrlMessage)
     {
-        delete[] mUrlMessage;
+        free(mUrlMessage);
         mReceivedBlocks.clear();
     }
     mUrlMessageReceivedSize = 0;
-    mUrlMessage = new uint8_t[size];
+    mUrlMessage = (uint8_t*)malloc(size);
     mUrlMessageTotalSize = size;
 }
 

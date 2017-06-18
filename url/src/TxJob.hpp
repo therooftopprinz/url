@@ -9,6 +9,7 @@
 #include "ITxJob.hpp"
 #include "IEndPoint.hpp"
 #include "UrlPduAssembler.hpp"
+#include "RxSegmentAssembler.hpp"
 
 namespace urlsock
 {
@@ -23,7 +24,7 @@ class TxJob : public ITxJob
 {
 public:
     TxJob(const ConstBufferView& buffer, IEndPoint& endpoint, IpPortMessageId ipPortMessage, bool acknowledgedMode,
-        uint8_t intProtAlg, uint8_t cipherAlg);
+        uint8_t intProtAlg, uint8_t cipherAlg, uint32_t mtuSize);
     void eventAckReceived(uint32_t offset);
     void run();
 private:
@@ -45,6 +46,13 @@ private:
     uint64_t mNearestExpiry;
     uint32_t mNextOffset;
     uint32_t mRetryCount;
+
+    const uint32_t MTU_SIZE; 
+    const uint32_t MIN_UACK_PACKET = 1;
+    const uint32_t MAX_UACK_PACKET = 15;
+    const uint32_t MAX_TIMEOUT_WINDOW_SIZE = 20000000; // 20s
+    const uint32_t MIN_TIMEOUT_WINDOW_SIZE = 2000; // 2ms
+
     double  mTimeoutBias;
     uint32_t mMaxConsequentSending;  /** TODO: base batch size to channel quality**/
     uint8_t mBufferTx[UDP_MAX_SIZE];

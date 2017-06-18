@@ -1,9 +1,10 @@
+#include <iostream>
 #include "TxJob.hpp"
 namespace urlsock
 {
 
 TxJob::TxJob(const ConstBufferView& buffer, IEndPoint& endpoint, IpPortMessageId ipPortMessage, bool acknowledgedMode,
-    uint8_t intProtAlg, uint8_t cipherAlg):
+    uint8_t intProtAlg, uint8_t cipherAlg, uint32_t mtuSize):
     mMessage(buffer),
     mEndpoint(endpoint),
     mMsgId(ipPortMessage.second),
@@ -14,6 +15,7 @@ TxJob::TxJob(const ConstBufferView& buffer, IEndPoint& endpoint, IpPortMessageId
     mNearestExpiry(static_cast<uint64_t>(-1)),
     mNextOffset(0),
     mRetryCount(0),
+    MTU_SIZE(mtuSize),
     mTimeoutBias(0.0),
     mMaxConsequentSending(10)
 {
@@ -61,10 +63,8 @@ void TxJob::run()
 
 void TxJob::send(UrlPduAssembler& pdu, uint32_t sendSize)
 {
-    if ((mNextOffset+sendSize) > mMessage.size())
-    {
-        sendSize = mMessage.size() - mNextOffset;
-    }
+    std::cout << "Sending from " << (void*)(mMessage.data()+mNextOffset) <<
+        " with size " << sendSize << std::endl;
 
     BufferView txBuffer(mBufferTx, UDP_MAX_SIZE);
     auto pduRaw = pdu.createFrom(txBuffer);
@@ -83,6 +83,11 @@ void TxJob::send(UrlPduAssembler& pdu, uint32_t sendSize)
 void TxJob::sendFirst()
 {
     auto sendSize = 300; /** TODO: base this on channel quality**/
+    if ((mNextOffset+sendSize) > mMessage.size())
+    {
+        sendSize = mMessage.size() - mNextOffset;
+    }
+
     UrlPduAssembler pdu;
     pdu.setInitialDataHeader(mMessage.size(), mMsgId, 0,
         false, mAcknowledgedMode, 0, 0);
@@ -101,10 +106,16 @@ void TxJob::scheduledSend()
     {
         return;
     }
+
     auto nToSend = mMaxConsequentSending-mTxContextOffsetMap.size();
     for (auto i=0u; i<nToSend && mNextOffset<mMessage.size(); i++)
     {
         auto sendSize = 300; /** TODO: base this on channel quality**/
+        if ((mNextOffset+sendSize) > mMessage.size())
+        {
+            sendSize = mMessage.size() - mNextOffset;
+        }
+
         UrlPduAssembler pdu;
         pdu.setDataHeader(mNextOffset, mMsgId, 0);
         pdu.setPayload(ConstBufferView(mMessage.data()+mNextOffset, sendSize));

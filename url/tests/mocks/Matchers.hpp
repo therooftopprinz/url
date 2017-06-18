@@ -4,7 +4,7 @@
 namespace urlsock
 {
 
-void pbuff(const uint8_t *data, size_t size)
+static void pbuff(const uint8_t *data, size_t size)
 {
     std::cout << "Buffer("<<(void*)data << "): ";
     for (auto i=0u; i<size; i++)
@@ -36,7 +36,7 @@ public:
         return std::bind(&Matcher::match, this, _1, _2, _3);
     }
 protected:
-    virtual bool match(const void *buffer, size_t size, IpPort IpPort)
+    virtual bool match(const void *, size_t, IpPort)
     {
         return false;
     }
@@ -78,6 +78,21 @@ private:
     }
 
     Buffer mMsg;
+    IpPort mIpPort;
+};
+
+class AnyMessageMatcher : public Matcher
+{
+public:
+    AnyMessageMatcher(IpPort ipPort):
+        mIpPort(ipPort)
+    {
+    }
+private:
+    bool match(const void *buffer, size_t size, IpPort ipPort)
+    {
+        return mIpPort==ipPort;
+    }
     IpPort mIpPort;
 };
 

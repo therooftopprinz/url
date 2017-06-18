@@ -13,20 +13,22 @@ namespace urlsock
 {
 
 typedef std::function<bool(const void*,size_t,IpPort)> MatcherFunctor;
-typedef std::function<void()> ActionFunctor;
+typedef std::function<void(const void*,size_t,IpPort)> ActionFunctor;
 
 class DefaultAction
 {
 public:
     inline static ActionFunctor get()
     {
-        return std::bind(&DefaultAction::action);
+        using std::placeholders::_1;
+        using std::placeholders::_2;
+        using std::placeholders::_3;
+        return std::bind(&DefaultAction::action, _1, _2, _3);
     }
 
 private:
-    inline static void action()
+    inline static void action(const void *buffer, size_t size, IpPort ipPort)
     {
-
     }
 };
 
@@ -40,7 +42,8 @@ public:
     size_t receive(BufferView&& payload, IpPort& port);
     void toReceive(Buffer buffer, IpPort port);
     void expectSend(uint32_t id, uint32_t prerequisite, bool chainable, uint32_t cardinality,
-        std::function<bool(const void *buffer, size_t size, IpPort ipPort)> matcher, std::function<void()> action);
+        std::function<bool(const void *buffer, size_t size, IpPort ipPort)> matcher,
+        std::function<void(const void *buffer, size_t size, IpPort ipPort)> action);
     void waitForAllSending(double milliseconds);
 
 private:
