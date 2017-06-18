@@ -27,8 +27,8 @@ URL is composed of mutiple headers and might contain a payload.
 
 * HT (2-bit)- Header Type.
 * SQN (30-bit) - URL Message Offset for the corresponding ACK/NACK.
-* MSG_ID - Message Identifier for the corresponding ACK/NACK.
-* MAC - Message Authentication Code.
+* MSG_ID (16-bit) - Message Identifier for the corresponding ACK/NACK.
+* MAC (16-bit) - Message Authentication Code.
 
 **URL Message Initial Data Header**
 
@@ -40,8 +40,8 @@ Indicates the start of trasmission of URL Message. Contains the size of URL Mess
 
 * HT (2-bit) - Header.
 * SZ (30-bit) - URL Message size.
-* MSG_ID (32-bit) - Message Identifier for the corresponding segment payload.
-* MAC - Message Authentication Code
+* MSG_ID (16-bit) - Message Identifier for the corresponding segment payload.
+* MAC (16-bit)- Message Authentication Code
 * SEND_OPT - Send option:
   * 3:0 - Integrity Protection Algorithm.
   * 7:4 - Ciphering Algorithm.
@@ -58,8 +58,8 @@ Indicates URL Segment Message. Payload is required. Last header before payload.
 
 * HT (2-bit) - Header Type.
 * OFSSET (30-bit) - URL Message Offset for the corresponding segment payload.
-* MSG_ID (32-bit) - Message Identifier for the corresponding segment payload.
-* MAC - Message Authentication Code.
+* MSG_ID (16-bit) - Message Identifier for the corresponding segment payload.
+* MAC (16-bit) - Message Authentication Code.
 
 **URL Protocol Information : NACK Information**
 
