@@ -115,6 +115,8 @@ public:
 private:
     void ackNotifierThread(uint32_t offset)
     {
+        std::this_thread::sleep_for(std::chrono::microseconds(500)); // Simulate latency
+        std::cout << "sending ack for: " << offset << std::endl;
         mTxJob.eventAckReceived(offset);
     }
 
@@ -160,7 +162,7 @@ TEST_F(TxJobTests, shouldSendOneSegmentUrlMessage)
     RxChecker rxChecker(txJob, ipPort, MSG_ID);
 
     AnyMessageMatcher allSendOfIpPort(ipPort);
-    endPoint.expectSend(1, 0, false, -11, allSendOfIpPort.get(), rxChecker.get());
+    endPoint.expectSend(1, 0, false, -1, allSendOfIpPort.get(), rxChecker.get());
     txJob.run();
 
     endPoint.waitForAllSending(100.0);

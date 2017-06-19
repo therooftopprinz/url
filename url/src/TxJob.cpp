@@ -25,20 +25,22 @@ void TxJob::eventAckReceived(uint32_t offset)
 {
     {
         std::lock_guard<std::mutex> guard(mTxContextLock);
-        if (!offset)
-        {
-            mFirstAcked = true;
-        }
         auto found = mTxContextOffsetMap.find(offset);
         if (found == mTxContextOffsetMap.end())
         {
             /** TODO: ack not in list**/
+            std::cout << "not in list " << offset << std::endl;
             return;
+        }
+        if (!offset)
+        {
+            mFirstAcked = true;
         }
         mTxContextOffsetMap.erase(found);
         mAckReceived = true;
     }
     mTxContextCv.notify_one();
+    std::cout << "ack for " << offset << std::endl;
 }
 
 bool TxJob::hasSchedulable()
@@ -58,6 +60,7 @@ void TxJob::run()
     {
         scheduledSend();
         scheduledResend();
+        // TODO: Check
     }
 }
 
@@ -133,29 +136,36 @@ void TxJob::scheduledResend()
             return mAckReceived;
         });
 
-    if (mAckReceived)
+
+    const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    for (auto& i : mTxContextOffsetMap)
     {
-        const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-        for (auto& i : mTxContextOffsetMap)
+        const auto tdiff = now - i.second.mTimeSent;
+        if (tdiff > 1000u) /** TODO: timeout based on channel quality**/
         {
-            const auto tdiff = now - i.second.mTimeSent;
-            if (tdiff > 500000) /** TODO: timeout based on channel quality**/
+            const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+            i.second.mTimeSent = now;
+            UrlPduAssembler pdu;
+            if (!i.first)
             {
-                const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-                i.second.mTimeSent = now;
-                UrlPduAssembler pdu;
+                pdu.setInitialDataHeader(i.first, mMsgId, 0,
+                    false, mAcknowledgedMode, 0, 0);
+            }
+            else
+            {   
                 pdu.setDataHeader(i.first, mMsgId, 0);
-                pdu.setPayload(ConstBufferView(mMessage.data()+i.first, i.second.mSegmentSize));
-                BufferView txBuffer(mBufferTx, UDP_MAX_SIZE);
-                auto pduRaw = pdu.createFrom(txBuffer);
-                mEndpoint.send(pduRaw, mIpPort);
             }
-            else if (tdiff < mNearestExpiry)
-            {
-                mNearestExpiry = now;
-            }
+            pdu.setPayload(ConstBufferView(mMessage.data()+i.first, i.second.mSegmentSize));
+            BufferView txBuffer(mBufferTx, UDP_MAX_SIZE);
+            auto pduRaw = pdu.createFrom(txBuffer);
+            mEndpoint.send(pduRaw, mIpPort);
+            std::cout << "timeout resending " << i.first;
+        }
+        else if (tdiff < mNearestExpiry)
+        {
+            mNearestExpiry = now;
         }
 
         mAckReceived = false;

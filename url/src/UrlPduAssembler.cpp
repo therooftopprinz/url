@@ -143,7 +143,6 @@ void UrlPduAssembler::createHeaders(BufferView& buffer)
 void UrlPduAssembler::putPayload(BufferView& buffer)
 {
     size_t dataOffset = calculateHeaderSize();
-    std::cout << "putPayload: " << (void*)mPayload.data() << " size " << mPayload.size() << std::endl;
     std::memcpy(buffer.data()+dataOffset, mPayload.data(), mPayload.size());
 }
 
