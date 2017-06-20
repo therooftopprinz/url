@@ -158,7 +158,7 @@ TEST_F(TxJobTests, shouldSendOneSegmentUrlMessage)
 
     ConstBufferView messageDataCb(messageData);
     TxJob txJob(messageDataCb, endPoint, std::make_pair(ipPort, MSG_ID), true,
-        0, 0, 1000);
+        0, 0, 1500);
     RxChecker rxChecker(txJob, ipPort, MSG_ID);
 
     AnyMessageMatcher allSendOfIpPort(ipPort);

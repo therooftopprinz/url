@@ -15,15 +15,16 @@ TxParameterHelper::TxParameterHelper(uint32_t mtuSize,
     mMinTimeoutWindowSize(minTimeoutWindowSize),
     mMaxNMtu(maxNMtu),
     mMinNMtu(minNMtu),
-    mLastTimeout(0),
+    mLastTimeoutTime(0),
     mMeanTimeout(static_cast<uint64_t>(-1)),
-    mNSamples(0)
+    mNSamples(0),
+    mLastTimeoutWindow(minTimeoutWindowSize)
 {
 }
 
 void TxParameterHelper::newTimeout(uint32_t timeout)
 {
-    mLastTimeout = std::chrono::duration_cast<std::chrono::microseconds>(
+    mLastTimeoutTime = std::chrono::duration_cast<std::chrono::microseconds>(
         std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
     if (mMeanTimeout == static_cast<uint64_t>(-1))
@@ -36,17 +37,28 @@ void TxParameterHelper::newTimeout(uint32_t timeout)
     }
 
     mMeanTimeout = mMaxTimeoutWindowSize>mMeanTimeout ? mMeanTimeout : mMaxTimeoutWindowSize;
-    mLastTimeout = mMaxTimeoutWindowSize>mLastTimeout ? mMeanTimeout : mMaxTimeoutWindowSize;
+    mLastTimeoutTime = mMaxTimeoutWindowSize>mLastTimeoutTime ? mLastTimeoutTime : mMaxTimeoutWindowSize;
     mNSamples++;
 }
 
 
 double TxParameterHelper::channelQuality()
 {
-    double x = mMeanTimeout/mMaxTimeoutWindowSize;
-    double y = mLastTimeout/mMaxTimeoutWindowSize;
+    auto lastTimeOut = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::high_resolution_clock::now().time_since_epoch()).count() - mLastTimeoutTime;
+    if (mLastTimeoutWindow>lastTimeOut)
+    {
+        lastTimeOut = 0;
+    }
+    else
+    {
+        lastTimeOut -= mLastTimeoutWindow;
+    }
 
-    return (sin(x*1.5)+0.5*sin(y*1.5))/1.4;
+    double x = mMeanTimeout/mMaxTimeoutWindowSize;
+    double y = lastTimeOut/mMaxTimeoutWindowSize;
+
+    return (std::sin(x*1.5)+0.5*std::sin(y*1.5))/1.4;
 }
 
 uint32_t TxParameterHelper::getOptimalSegmentSize()
@@ -57,8 +69,15 @@ uint32_t TxParameterHelper::getOptimalSegmentSize()
 
 uint32_t TxParameterHelper::getOptimalTimeout()
 {
-    uint32_t mtu = (mMinTimeoutWindowSize-mMaxTimeoutWindowSize)*channelQuality()+mMaxTimeoutWindowSize;
-    return mtu*mMtuSize;
+    uint32_t to = (mMinTimeoutWindowSize-mMaxTimeoutWindowSize)*channelQuality()+mMaxTimeoutWindowSize;
+    mLastTimeoutWindow = to*mMtuSize;
+    return mLastTimeoutWindow;
+}
+
+uint32_t TxParameterHelper::getOptimalUackPacket()
+{
+    uint32_t nmtu = (mMinNMtu-mMaxNMtu)*channelQuality()+mMaxNMtu;
+    return nmtu;
 }
 
 } // namespace urlsock

@@ -26,9 +26,10 @@ private:
     const uint32_t mMaxNMtu;
     const uint32_t mMinNMtu;
 
-    uint64_t mLastTimeout;
+    uint64_t mLastTimeoutTime;
     uint64_t mMeanTimeout;
     uint64_t mNSamples;
+    uint32_t mLastTimeoutWindow;
     double mChannelQuality;
 };
 

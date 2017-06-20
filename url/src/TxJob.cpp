@@ -16,8 +16,10 @@ TxJob::TxJob(const ConstBufferView& buffer, IEndPoint& endpoint, IpPortMessageId
     mNextOffset(0),
     mRetryCount(0),
     MTU_SIZE(mtuSize),
-    mTimeoutBias(0.0),
-    mMaxConsequentSending(10)
+    mTxParameterHelper(mtuSize,
+        MAX_UACK_PACKET, MIN_UACK_PACKET,
+        MAX_TIMEOUT_WINDOW_SIZE, MIN_TIMEOUT_WINDOW_SIZE,
+        MAX_NMTU, MIN_NMTU)
 {
 }
 
@@ -85,7 +87,7 @@ void TxJob::send(UrlPduAssembler& pdu, uint32_t sendSize)
 
 void TxJob::sendFirst()
 {
-    auto sendSize = 300; /** TODO: base this on channel quality**/
+    auto sendSize = mTxParameterHelper.getOptimalSegmentSize();
     if ((mNextOffset+sendSize) > mMessage.size())
     {
         sendSize = mMessage.size() - mNextOffset;
@@ -105,15 +107,16 @@ void TxJob::scheduledSend()
     {
         return;
     }
-    if (mTxContextOffsetMap.size() >= mMaxConsequentSending)
+    auto maxUackSending = mTxParameterHelper.getOptimalUackPacket();
+    if (mTxContextOffsetMap.size() >= maxUackSending)
     {
         return;
     }
 
-    auto nToSend = mMaxConsequentSending-mTxContextOffsetMap.size();
+    auto nToSend = maxUackSending-mTxContextOffsetMap.size();
     for (auto i=0u; i<nToSend && mNextOffset<mMessage.size(); i++)
     {
-        auto sendSize = 300; /** TODO: base this on channel quality**/
+        auto sendSize = mTxParameterHelper.getOptimalSegmentSize();
         if ((mNextOffset+sendSize) > mMessage.size())
         {
             sendSize = mMessage.size() - mNextOffset;
@@ -142,7 +145,7 @@ void TxJob::scheduledResend()
     for (auto& i : mTxContextOffsetMap)
     {
         const auto tdiff = now - i.second.mTimeSent;
-        if (tdiff > 1000u) /** TODO: timeout based on channel quality**/
+        if (tdiff > mTxParameterHelper.getOptimalTimeout())
         {
             const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();

@@ -10,6 +10,7 @@
 #include "IEndPoint.hpp"
 #include "UrlPduAssembler.hpp"
 #include "RxSegmentAssembler.hpp"
+#include "TxParameterHelper.hpp"
 
 namespace urlsock
 {
@@ -50,11 +51,12 @@ private:
     const uint32_t MTU_SIZE; 
     const uint32_t MIN_UACK_PACKET = 1;
     const uint32_t MAX_UACK_PACKET = 15;
-    const uint32_t MAX_TIMEOUT_WINDOW_SIZE = 20000000; // 20s
-    const uint32_t MIN_TIMEOUT_WINDOW_SIZE = 2000; // 2ms
+    const uint32_t MAX_TIMEOUT_WINDOW_SIZE = 3000; // 5s
+    const uint32_t MIN_TIMEOUT_WINDOW_SIZE = 100; // 2ms
+    const uint32_t MIN_NMTU = 1;
+    const uint32_t MAX_NMTU = 44;
 
-    double  mTimeoutBias;
-    uint32_t mMaxConsequentSending;  /** TODO: base batch size to channel quality**/
+    TxParameterHelper mTxParameterHelper;
     uint8_t mBufferTx[UDP_MAX_SIZE];
 };
 
