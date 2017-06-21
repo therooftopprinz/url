@@ -27,6 +27,7 @@ public:
     TxJob(const ConstBufferView& buffer, IEndPoint& endpoint, IpPortMessageId ipPortMessage, bool acknowledgedMode,
         uint8_t intProtAlg, uint8_t cipherAlg, uint32_t mtuSize);
     void eventAckReceived(uint32_t offset);
+    void eventNackReceived(uint32_t offset, ENackReason nackReason);
     void run();
 private:
     bool hasSchedulable();

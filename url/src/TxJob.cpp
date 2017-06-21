@@ -45,6 +45,10 @@ void TxJob::eventAckReceived(uint32_t offset)
     std::cout << "ack for " << offset << std::endl;
 }
 
+void TxJob::eventNackReceived(uint32_t offset, ENackReason nackReason)
+{
+}
+
 bool TxJob::hasSchedulable()
 {
     std::lock_guard<std::mutex> guard(mTxContextLock);
@@ -138,7 +142,6 @@ void TxJob::scheduledResend()
         {
             return mAckReceived;
         });
-
 
     const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
         std::chrono::high_resolution_clock::now().time_since_epoch()).count();

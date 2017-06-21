@@ -2,6 +2,7 @@
 #define IRXBUFFERMANAGER_HPP_
 
 #include <list>
+#include "UrlSockCommon.hpp"
 #include "Buffer.hpp"
 
 namespace urlsock

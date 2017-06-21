@@ -8,6 +8,7 @@ struct ITxJob
 {
     virtual ~ITxJob() = default;
     virtual void eventAckReceived(uint32_t offset) = 0;
+    virtual void eventNackReceived(uint32_t offset, ENackReason nackReason) = 0;
     virtual void run() = 0;
 };
 
