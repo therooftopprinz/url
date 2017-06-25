@@ -79,11 +79,21 @@ void Buffer::validateAlloc()
 
 Buffer& Buffer::operator=(const Buffer& other)
 {
+    assign(other.mAllocData, other.mAllocData+other.mDataSize);
     return *this;
 }
 
 Buffer& Buffer::operator=(Buffer&& other)
 {
+    if (mAllocData)
+    {
+        free(mAllocData);
+        mDataSize = 0;
+        mAllocSize = 0;
+    }
+    mAllocData = other.mAllocData;
+    mDataSize = other.mDataSize;
+    mAllocSize = other.mAllocSize;
     return *this;
 }
 
@@ -106,10 +116,12 @@ void Buffer::assign(uint8_t* start, uint8_t* end)
     uint8_t* newData = mAllocData;
     size_t wantedSize = uintptr_t(end) - uintptr_t(start);
     reserve(wantedSize);
+    bool alloced = false;
     if (wantedSize > mAllocSize)
     {
         newData = (uint8_t*)std::malloc(wantedSize);
         mAllocSize = wantedSize;
+        alloced = true;
     }
     if (!newData)
     {
@@ -117,12 +129,15 @@ void Buffer::assign(uint8_t* start, uint8_t* end)
     }
 
     std::memcpy(newData, start, wantedSize);
-    free(mAllocData);
+
+    if (alloced)
+    {
+        free(mAllocData);
+        mAllocData = newData;
+    }
 
     mDataSize = wantedSize;
-    mAllocData = newData;
 }
-
 
 /** Element access **/
 uint8_t* Buffer::data()

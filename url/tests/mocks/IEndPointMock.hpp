@@ -37,7 +37,6 @@ class IEndPointMock : public IEndPoint
 public:
     size_t send(const Buffer&, IpPort);
     size_t send(const BufferView&, IpPort);
-    size_t send(Buffer&& payload, IpPort target);
     size_t receive(Buffer& buffer, IpPort& port);
     size_t receive(BufferView&& payload, IpPort& port);
     void toReceive(Buffer buffer, IpPort port);

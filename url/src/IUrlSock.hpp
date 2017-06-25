@@ -3,6 +3,7 @@
 
 #include "Buffer.hpp"
 #include "RxSegmentAssembler.hpp"
+#include "UrlSockCommon.hpp"
 
 namespace urlsock
 {

@@ -14,11 +14,6 @@ size_t IEndPointMock::send(const BufferView& payload, IpPort target)
     return sendCommon(payload.data(), payload.size(), target);
 }
 
-size_t IEndPointMock::send(Buffer&& payload, IpPort target)
-{
-    return sendCommon(payload.data(), payload.size(), target);
-}
-
 size_t IEndPointMock::receive(Buffer& payload, IpPort& port)
 {
     return receiveCommon(payload.data(), payload.size(), port);
