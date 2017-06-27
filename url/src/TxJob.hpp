@@ -4,6 +4,7 @@
 #include <map>
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
 #include "Buffer.hpp"
 #include "UrlSockCommon.hpp"
 #include "ITxJob.hpp"
@@ -28,7 +29,7 @@ public:
         uint8_t intProtAlg, uint8_t cipherAlg, uint32_t mtuSize);
     void eventAckReceived(uint32_t offset);
     void eventNackReceived(uint32_t offset, ENackReason nackReason);
-    void run();
+    ESendResult run();
 private:
     bool hasSchedulable();
     void send(UrlPduAssembler&, uint32_t);
@@ -47,7 +48,7 @@ private:
     bool mAckReceived;
     uint64_t mNearestExpiry;
     uint32_t mNextOffset;
-    uint32_t mRetryCount;
+    std::atomic<uint32_t> mRetryCount;
 
     const uint32_t MTU_SIZE; 
     const uint32_t MIN_UACK_PACKET = 1;

@@ -16,13 +16,12 @@ class TxJobManager : public ITxJobManager
 {
 public:
     TxJobManager() = default;
-    std::shared_ptr<ITxJob> getITxJobByIpPortMessageId(IpPortMessageId ipPortMessage);
-    bool createITxJob(IpPortMessageId ipPortMessage, std::shared_ptr<ITxJob>& itxJob);
+    bool createITxJob(IpPortMessageId ipPortMessage, ITxJob& itxJob);
     bool deleteITxJob(IpPortMessageId ipPortMessage);
     bool reportAck(IpPortMessageId ipPortMessage, uint32_t offset);
     bool reportNack(IpPortMessageId ipPortMessage,  uint32_t offset, ENackReason reason);
 private:
-    std::map<IpPortMessageId,std::shared_ptr<ITxJob>> mTxJobMap;
+    std::map<IpPortMessageId,ITxJob&> mTxJobMap;
     std::mutex mTxJobMapMutex;
 };
 

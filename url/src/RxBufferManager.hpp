@@ -12,8 +12,8 @@ namespace urlsock
 class RxBufferManager : public IRxBufferManager
 {
 public:
-    void enqueue(IpPort ipPort, Buffer&& message) = 0;
-    RxObject dequeue() = 0;
+    void enqueue(IpPort ipPort, Buffer&& message);
+    RxObject dequeue();
 private:
     std::list<RxObject> mRxBuffer;
     std::mutex mRxBufferMutex;

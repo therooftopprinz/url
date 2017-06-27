@@ -40,6 +40,7 @@ void TxJob::eventAckReceived(uint32_t offset)
         }
         mTxContextOffsetMap.erase(found);
         mAckReceived = true;
+        mRetryCount = 0;
     }
     mTxContextCv.notify_one();
     std::cout << "ack for " << offset << std::endl;
@@ -59,7 +60,7 @@ bool TxJob::hasSchedulable()
     return false;
 }
 
-void TxJob::run()
+ESendResult TxJob::run()
 {
     sendFirst();
     while (hasSchedulable())
@@ -67,7 +68,12 @@ void TxJob::run()
         scheduledSend();
         scheduledResend();
         // TODO: Check
+        if (mRetryCount > 10) // TODO: base on configurable max
+        {
+            return ESendResult::TooManyRetries;
+        }
     }
+    return ESendResult::Ok;
 }
 
 void TxJob::send(UrlPduAssembler& pdu, uint32_t sendSize)
@@ -168,6 +174,7 @@ void TxJob::scheduledResend()
             auto pduRaw = pdu.createFrom(txBuffer);
             mEndpoint.send(pduRaw, mIpPort);
             std::cout << "timeout resending " << i.first;
+            mRetryCount++;
         }
         else if (tdiff < mNearestExpiry)
         {

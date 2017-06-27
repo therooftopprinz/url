@@ -3,18 +3,7 @@
 namespace urlsock
 {
 
-std::shared_ptr<ITxJob> TxJobManager::getITxJobByIpPortMessageId(IpPortMessageId ipPortMessage)
-{
-    std::lock_guard<std::mutex> lock(mTxJobMapMutex);
-    auto found = mTxJobMap.find(ipPortMessage);
-    if (found==mTxJobMap.end())
-    {
-        return {};
-    }
-    return found->second;
-}
-
-bool TxJobManager::createITxJob(IpPortMessageId ipPortMessage, std::shared_ptr<ITxJob>& itxJob)
+bool TxJobManager::createITxJob(IpPortMessageId ipPortMessage, ITxJob& itxJob)
 {
     std::lock_guard<std::mutex> lock(mTxJobMapMutex);
     auto  ir = mTxJobMap.emplace(ipPortMessage, itxJob);
@@ -41,7 +30,7 @@ bool TxJobManager::reportAck(IpPortMessageId ipPortMessage, uint32_t offset)
     {
         return false;
     }
-    found->second->eventAckReceived(offset);
+    found->second.eventAckReceived(offset);
     return true;
 }
 
@@ -53,7 +42,7 @@ bool TxJobManager::reportNack(IpPortMessageId ipPortMessage,  uint32_t offset, E
     {
         return false;
     }
-    found->second->eventNackReceived(offset, reason);
+    found->second.eventNackReceived(offset, reason);
     return true;
 }
 

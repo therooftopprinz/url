@@ -13,7 +13,6 @@ struct IUrlSock
     virtual ~IUrlSock() = default;
     virtual ESendResult send(const BufferView& payload, IpPort target) = 0;
     virtual ESendResult send(const Buffer& payload, IpPort target) = 0;
-    virtual ESendResult send(Buffer&& payload, IpPort target) = 0;
     virtual EReceiveResult receive(Buffer& payload, IpPort& targeter) = 0;
 };
 
