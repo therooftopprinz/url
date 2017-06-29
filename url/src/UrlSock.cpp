@@ -36,7 +36,7 @@ ESendResult UrlSock::send(const Buffer& payload, IpPort target)
 EReceiveResult UrlSock::receive(Buffer& payload, IpPort& targeter)
 {
     auto rv = mRxBufferManager.dequeue();
-    if (rv.second.size())
+    if (!rv.second.size())
     {
         return EReceiveResult::TimeOut;
     }
