@@ -15,7 +15,7 @@ ESendResult UrlSock::send(const uint8_t* buffer, size_t size, IpPort target)
 {
     ConstBufferView pl(buffer, size);
     IpPortMessageId ippmsg = std::make_pair(target, mMsgId++);
-    TxJob txj(pl, mEndpoint, ippmsg, true, 0, 0, 1500);
+    TxJob txj(pl, mEndpoint, ippmsg, true, 0, 0, 1500); // TODO: Configurable on by socket
     mTxJobManager.createITxJob(ippmsg, txj);
     auto rv = txj.run();
     mTxJobManager.deleteITxJob(ippmsg);
