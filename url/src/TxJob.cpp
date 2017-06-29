@@ -53,11 +53,7 @@ void TxJob::eventNackReceived(uint32_t offset, ENackReason nackReason)
 bool TxJob::hasSchedulable()
 {
     std::lock_guard<std::mutex> guard(mTxContextLock);
-    if (!mTxContextOffsetMap.empty() || mNextOffset < mMessage.size())
-    {
-        return true;
-    }
-    return false;
+    return !mTxContextOffsetMap.empty() || mNextOffset < mMessage.size();
 }
 
 ESendResult TxJob::run()
