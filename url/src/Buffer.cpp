@@ -94,6 +94,10 @@ Buffer& Buffer::operator=(Buffer&& other)
     mAllocData = other.mAllocData;
     mDataSize = other.mDataSize;
     mAllocSize = other.mAllocSize;
+    other.mAllocData = nullptr;
+    other.mDataSize = 0;
+    other.mAllocSize = 0;
+
     return *this;
 }
 

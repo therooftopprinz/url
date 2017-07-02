@@ -3,6 +3,7 @@
 
 #include <string>
 #include <exception>
+#include <arpa/inet.h>
 
 namespace urlsock
 {
@@ -27,10 +28,10 @@ using MessageId = uint16_t;
 using IpPortMessageId = std::pair<IpPort, MessageId>;
 
 inline IpPort IpPorter(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port){
-    return uint64_t(a)<<56|uint64_t(b)<<48|uint64_t(c)<<40|uint64_t(d)<<32|port;}
-inline IpPort IpPorter(uint32_t a, uint16_t port){return (uint64_t(a)<<32)|port;}
-inline uint16_t portFromIpPort(IpPort ipPort){return ipPort&0xFFFF;}
-inline uint16_t ipFromIpPort(IpPort ipPort){return ipPort>>32;}
+    return uint64_t(d)<<56|uint64_t(c)<<48|uint64_t(b)<<40|uint64_t(a)<<32|htons(port);}
+inline IpPort IpPorter(uint32_t a, uint16_t port){return (uint64_t(a)<<32)|htons(port);}
+inline uint16_t portFromIpPort(IpPort ipPort){return ntohs(ipPort&0xFFFF);}
+inline uint32_t ipFromIpPort(IpPort ipPort){return ipPort>>32;}
 
 } // namespace urlsock
 

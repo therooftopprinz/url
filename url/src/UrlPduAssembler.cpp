@@ -25,6 +25,7 @@ void UrlPduAssembler::setInitialDataHeader(uint32_t urlMessageSize, uint16_t msg
 {
     mHasInitialDataHeader = true;
     mUrlMessageSize = urlMessageSize;
+    mOffset = 0;
     mMsgId = msgId;
     mMac = mac;
     mRetransmit = retransmit;

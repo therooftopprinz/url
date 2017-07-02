@@ -23,10 +23,16 @@ UdpEndpoint::UdpEndpoint(uint32_t port)
     myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     myaddr.sin_port = htons(port);
 
-    if (bind(mSockFd, (sockaddr *)&myaddr, sizeof(myaddr)) < 0)
+    if (int t=bind(mSockFd, (sockaddr *)&myaddr, sizeof(myaddr)) < 0)
     {
-        throw std::runtime_error("bind failed");
+        std::string err = "bind failed: "+std::to_string(t)+" errorno: "+strerror(errno);
+        throw std::runtime_error(err);
     }
+
+    struct timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    setsockopt(mSockFd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
 }
 
 size_t UdpEndpoint::send(const BufferView& payload, IpPort target)
@@ -62,7 +68,7 @@ size_t UdpEndpoint::receive(BufferView&& payload, IpPort& from)
     sockaddr_in framddr;
     socklen_t framddrSz = sizeof(framddr);
     auto sz = recvfrom(mSockFd, payload.data(), payload.size(), 0, (sockaddr*)&framddr, &framddrSz);
-    from = IpPorter(framddr.sin_addr.s_addr, framddr.sin_port);
+    from = IpPorter(framddr.sin_addr.s_addr, ntohs(framddr.sin_port));
     return sz;
 }
 

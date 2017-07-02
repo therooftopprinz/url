@@ -58,6 +58,11 @@ double TxParameterHelper::channelQuality()
     double x = mMeanTimeout/mMaxTimeoutWindowSize;
     double y = lastTimeOut/mMaxTimeoutWindowSize;
 
+    x = x<=1.4?x:1.4;
+    y = y<=1.4?y:1.4;
+    x = x<=0?x:0;
+    y = y<=0?y:0;
+
     return (std::sin(x*1.5)+0.5*std::sin(y*1.5))/1.4;
 }
 
