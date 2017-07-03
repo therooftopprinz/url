@@ -156,6 +156,20 @@ void TxJob::scheduledResend()
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();
             i.second.mTimeSent = now;
             UrlPduAssembler pdu;
+
+            auto sendSize = mTxParameterHelper.getOptimalSegmentSize();
+            if (sendSize >= i.second.mSegmentSize)
+            {
+                sendSize = i.second.mSegmentSize;
+            }
+            else
+            {
+                TxContext context;
+                context.mTimeSent = i.second.mTimeSent;
+                context.mSegmentSize = i.second.mSegmentSize-sendSize;
+                mTxContextOffsetMap.emplace(std::make_pair(i.first+sendSize, context));
+            }
+
             if (!i.first)
             {
                 pdu.setInitialDataHeader(i.first, mMsgId, 0,
@@ -165,7 +179,7 @@ void TxJob::scheduledResend()
             {   
                 pdu.setDataHeader(i.first, mMsgId, 0);
             }
-            pdu.setPayload(ConstBufferView(mMessage.data()+i.first, i.second.mSegmentSize));
+            pdu.setPayload(ConstBufferView(mMessage.data()+i.first, sendSize));
             BufferView txBuffer(mBufferTx, UDP_MAX_SIZE);
             auto pduRaw = pdu.createFrom(txBuffer);
             mEndpoint.send(pduRaw, mIpPort);
