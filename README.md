@@ -23,10 +23,10 @@ URL is composed of mutiple headers and might contain a payload.
 
 | \[0-3\](31:30) | \[0-3\](29:0) | \[4-7\](31:16) | \[4-7\](15:0) |
 |:--------------:|:-------------:|:--------------:|:-------------:|
-| HT = 00        | OFSSET        | MSG_ID         | MAC           |
+| HT = 00        | OFFSET        | MSG_ID         | MAC           |
 
 * HT (2-bit)- Header Type.
-* SQN (30-bit) - URL Message Offset for the corresponding ACK/NACK.
+* OFFSET (30-bit) - URL Message Offset for the corresponding ACK/NACK.
 * MSG_ID (16-bit) - Message Identifier for the corresponding ACK/NACK.
 * MAC (16-bit) - Message Authentication Code.
 
@@ -43,10 +43,12 @@ Indicates the start of trasmission of URL Message. Contains the size of URL Mess
 * MSG_ID (16-bit) - Message Identifier for the corresponding segment payload.
 * MAC (16-bit)- Message Authentication Code
 * SEND_OPT - Send option:
-  * 3:0 - Integrity Protection Algorithm.
-  * 7:4 - Ciphering Algorithm.
+  * 1:0 - Security Type.
+  	* 00 - No security
+  	* 01 - Integrity protected
+  	* 10 - Integrity and ciphered
+  	* 11 - Integrity and ciphered with new context.
   * 8 - Acknowledge Mode.
-  * 9 - Retransmission.
 
 **URL Message Data Header**
 
@@ -72,10 +74,9 @@ Indicated that there is an error in the received URL Message Segment. When prese
 * HT (2-bit) - Header Type.
 * ID (3-bit) - Infomation type.
 * INFO (27-bit) - Information Label:
-  * INFO = 0 - Duplicate Segment Mismatched.
-  * INFO = 1 - Received Segment Overlapped.
-  * INFO = 2 - Integrity Protection Failed.
-  * INFO = 3 - Decryption Failed.
+  * INFO == 1 - Integrity Protection Failed.
+  * INFO == 2 - Decryption Failed.
+  * INFO == 3 - Service Denied.
 
 ## Operation
 * When an URL message is requested to be the message size is larger than the configured URL MTU, the message will be segmented into several transmission units.
@@ -85,7 +86,6 @@ Indicated that there is an error in the received URL Message Segment. When prese
 * Every sent segment must have an ACK from receiver within URL SEGMENT TIMEOUT window.
 * If the URL MESSAGE SEGMENT TIMEOUT expires without an ACK, failed segment will be transmitted again.
 * Each retransmission decreases the URL Segment transmission size and increases the URL MESSAGE SEGMENT TX INTERVAL and URL MESSAGE SEGMENT TIMEOUT. 
-* If the total segment retransmission is equal to URL MAX MESSAGE SEGMENT RETX, the URL MESSAGE is resent from offset 0 with and with a URL Protocol Information: Sender Request INFO = Retransmit Indication. 
 * If the URL RETX failed URL MAX URL MSG RETX times, send function will return with an URL MESSAGE TX ERROR.
 
 ## URL Message Segment Size Selection
