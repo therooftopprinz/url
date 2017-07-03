@@ -30,7 +30,7 @@ endif
 ## TARGET DEBUG #########################################################################
 
 BUILDDIR              := ../build/normal
-BUILDDIR_GCOV         := ../build/gcovs
+BUILDDIR_GCOV         := ../build/gcov
 
 URL_INCDIR_GCC     := $(addprefix -I, $(URL_INCDIR))
 URL_TESTINCDIR_GCC := $(addprefix -I, $(URL_TESTINCDIR))
@@ -74,6 +74,33 @@ url_test: $(GTEST) $(PTREE_STATIC_LIB) $(URL_OBJECTS) $(URL_TESTS_OBJECTS)
 	@echo Linking $(URL_TARGET)/url_test
 	@$(CC) -g $(GTEST) $(URL_TEST_LD_GCC) $(URL_OBJECTS) $(URL_TESTS_OBJECTS) $(PTREE_STATIC_LIB) -o $(URL_TARGET)/url_test
 
+$(URL_TESTS_OBJECTS): $(BUILDDIR)/%.cpp.o : %.cpp
+	@mkdir -p $(@D)
+	@echo "Building TEST" $@
+	@$(CC) $(CFLAGS) $(URL_TESTINCDIR_GCC) -MMD -g -c $(patsubst $(BUILDDIR)/%.cpp.o,%.cpp,$@) -o $@
+
+## TARGET GCOV url UT #########################################################################
+
+$(URL_OBJECTS_GCOV): $(BUILDDIR_GCOV)/%.cpp.o : %.cpp
+	@mkdir -p $(@D)
+	@echo "Building SOURCE GCOV" $@
+	@$(CC) $(CFLAGS) $(URL_INCDIR_GCC) -MMD -g -fprofile-arcs -ftest-coverage --coverage -c $(patsubst $(BUILDDIR_GCOV)/%.cpp.o,%.cpp,$@) -o $@
+
+url_test_gcov: $(GTEST) $(PTREE_STATIC_LIB) $(URL_OBJECTS_GCOV) $(URL_TESTS_OBJECTS_GCOV)
+	@mkdir -p $(URL_TARGET)
+	@echo Linking $(URL_TARGET)/url_test
+	@$(CC) -g $(GTEST) $(URL_TEST_LD_GCC) $(URL_OBJECTS_GCOV) $(URL_TESTS_OBJECTS_GCOV) $(PTREE_STATIC_LIB) -lgcov --coverage -o $(URL_TARGET)/url_test
+
+$(URL_TESTS_OBJECTS_GCOV): $(BUILDDIR_GCOV)/%.cpp.o : %.cpp
+	@mkdir -p $(@D)
+	@echo "Building TEST GCOV" $@
+	@$(CC) $(CFLAGS) $(URL_TESTINCDIR_GCC) -MMD -g -fprofile-arcs -ftest-coverage --coverage -c $(patsubst $(BUILDDIR_GCOV)/%.cpp.o,%.cpp,$@) -o $@
+
+## RUN #################################################################################
+
+url_test_gcov_run: url_test_gcov
+	$(URL_TARGET)/url_test $(TESTFLAG)
+
 url_test_run: url_test
 	$(URL_TARGET)/url_test $(TESTFLAG)
 
@@ -83,10 +110,7 @@ url_test_valgrind_run: url_test
 url_test_valgrind_run_detailed: url_test
 	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all -v $(URL_TARGET)/url_test $(TESTFLAG)
 
-$(URL_TESTS_OBJECTS): $(BUILDDIR)/%.cpp.o : %.cpp
-	@mkdir -p $(@D)
-	@echo "Building TEST" $@
-	@$(CC) $(CFLAGS) $(URL_TESTINCDIR_GCC) -MMD -g -c $(patsubst $(BUILDDIR)/%.cpp.o,%.cpp,$@) -o $@
+## CLEAN ###############################################################################
 
 clean_url_test:
 	echo cleaning ut
