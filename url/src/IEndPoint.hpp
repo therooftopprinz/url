@@ -1,5 +1,5 @@
-#ifndef IENDPOINT_HPP_
-#define IENDPOINT_HPP_
+#ifndef URL_IENDPOINT_HPP_
+#define URL_IENDPOINT_HPP_
 
 #include "Buffer.hpp"
 #include "UrlSockCommon.hpp"

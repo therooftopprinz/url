@@ -1,5 +1,5 @@
-#ifndef TXJOBMANAGER_HPP_
-#define TXJOBMANAGER_HPP_
+#ifndef URL_TXJOBMANAGER_HPP_
+#define URL_TXJOBMANAGER_HPP_
 
 #include <memory>
 #include <map>

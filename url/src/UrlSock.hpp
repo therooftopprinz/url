@@ -1,5 +1,5 @@
-#ifndef URLSOCK_HPP_
-#define URLSOCK_HPP_
+#ifndef URL_URLSOCK_HPP_
+#define URL_URLSOCK_HPP_
 
 #include <atomic>
 #include "IUrlSock.hpp"

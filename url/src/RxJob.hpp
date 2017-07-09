@@ -1,5 +1,5 @@
-#ifndef RXJOB_HPP_
-#define RXJOB_HPP_
+#ifndef URL_RXJOB_HPP_
+#define URL_RXJOB_HPP_
 
 #include <atomic>
 #include <map>
@@ -7,6 +7,7 @@
 #include "Buffer.hpp"
 #include "UrlSockCommon.hpp"
 #include "RxSegmentAssembler.hpp"
+#include "Logger.hpp"
 
 namespace urlsock
 {
@@ -44,6 +45,7 @@ private:
     std::map<IpPortMessageId, RxContext> mRxContexts;
     uint8_t mBufferRx[UDP_MAX_SIZE];
     uint8_t mBufferTx[UDP_MAX_SIZE];
+    Logger mLogger;
 };
 
 } // namespace urlsock

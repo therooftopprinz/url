@@ -1,5 +1,5 @@
 #ifndef MATCHERS_HPP_
-#define MATCHERS_HPP_
+#define URL_TEST_MATCHERS_HPP_
 
 namespace urlsock
 {

@@ -1,5 +1,5 @@
-#ifndef ITXJOBMANAGER_HPP_
-#define ITXJOBMANAGER_HPP_
+#ifndef URL_ITXJOBMANAGER_HPP_
+#define URL_ITXJOBMANAGER_HPP_
 
 #include <memory>
 #include "Buffer.hpp"

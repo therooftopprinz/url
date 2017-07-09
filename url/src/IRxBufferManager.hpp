@@ -1,5 +1,5 @@
-#ifndef IRXBUFFERMANAGER_HPP_
-#define IRXBUFFERMANAGER_HPP_
+#ifndef URL_IRXBUFFERMANAGER_HPP_
+#define URL_IRXBUFFERMANAGER_HPP_
 
 #include <list>
 #include "UrlSockCommon.hpp"

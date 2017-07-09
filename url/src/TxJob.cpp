@@ -19,7 +19,8 @@ TxJob::TxJob(const ConstBufferView& buffer, IEndPoint& endpoint, IpPortMessageId
     mTxParameterHelper(mtuSize,
         MAX_UACK_PACKET, MIN_UACK_PACKET,
         MAX_TIMEOUT_WINDOW_SIZE, MIN_TIMEOUT_WINDOW_SIZE,
-        MAX_NMTU, MIN_NMTU)
+        MAX_NMTU, MIN_NMTU),
+    mLogger("TxJob")
 {
 }
 
@@ -31,7 +32,7 @@ void TxJob::eventAckReceived(uint32_t offset)
         if (found == mTxContextOffsetMap.end())
         {
             /** TODO: ack not in list**/
-            std::cout << "not in list " << offset << std::endl;
+            mLogger << LOG_ERROR << " ACK NOT IN LIST " << offset;
             return;
         }
         if (!offset)
@@ -43,7 +44,6 @@ void TxJob::eventAckReceived(uint32_t offset)
         mRetryCount = 0;
     }
     mTxContextCv.notify_one();
-    std::cout << "ack for " << offset << std::endl;
 }
 
 void TxJob::eventNackReceived(uint32_t offset, ENackReason nackReason)
@@ -74,8 +74,8 @@ ESendResult TxJob::run()
 
 void TxJob::send(UrlPduAssembler& pdu, uint32_t sendSize)
 {
-    std::cout << "Sending from " << (void*)(mMessage.data()+mNextOffset) <<
-        " with size " << sendSize << std::endl;
+    mLogger << LOG_DEBUG << "Sending from " << (void*)(mMessage.data()+mNextOffset) <<
+        " with size " << sendSize;
 
     BufferView txBuffer(mBufferTx, UDP_MAX_SIZE);
     auto pduRaw = pdu.createFrom(txBuffer);
@@ -183,7 +183,7 @@ void TxJob::scheduledResend()
             BufferView txBuffer(mBufferTx, UDP_MAX_SIZE);
             auto pduRaw = pdu.createFrom(txBuffer);
             mEndpoint.send(pduRaw, mIpPort);
-            std::cout << "timeout resending " << i.first;
+            mLogger << LOG_DEBUG << "timeout resending " << i.first;
             mRetryCount++;
         }
         else if (tdiff < mNearestExpiry)

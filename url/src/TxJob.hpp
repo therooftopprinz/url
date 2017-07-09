@@ -1,5 +1,5 @@
-#ifndef TXJOB_HPP_
-#define TXJOB_HPP_
+#ifndef URL_TXJOB_HPP_
+#define URL_TXJOB_HPP_
 
 #include <map>
 #include <mutex>
@@ -12,6 +12,7 @@
 #include "UrlPduAssembler.hpp"
 #include "RxSegmentAssembler.hpp"
 #include "TxParameterHelper.hpp"
+#include "Logger.hpp"
 
 namespace urlsock
 {
@@ -60,6 +61,8 @@ private:
 
     TxParameterHelper mTxParameterHelper;
     uint8_t mBufferTx[UDP_MAX_SIZE];
+
+    Logger mLogger;
 };
 
 } // namespace urlsock

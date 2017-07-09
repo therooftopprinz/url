@@ -1,5 +1,5 @@
-#ifndef BUFFER_HPP_
-#define BUFFER_HPP_
+#ifndef URL_BUFFER_HPP_
+#define URL_BUFFER_HPP_
 
 #include <cstdint>
 #include <stdexcept>

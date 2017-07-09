@@ -1,5 +1,5 @@
-#ifndef URLPDUCODEC_HPP_
-#define URLPDUCODEC_HPP_
+#ifndef URL_URLPDUCODEC_HPP_
+#define URL_URLPDUCODEC_HPP_
 
 #include <map>
 #include "Buffer.hpp"

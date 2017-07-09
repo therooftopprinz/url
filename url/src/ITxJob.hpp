@@ -1,5 +1,5 @@
-#ifndef ITXJOB_HPP_
-#define ITXJOB_HPP_
+#ifndef URL_ITXJOB_HPP_
+#define URL_ITXJOB_HPP_
 
 namespace urlsock
 {

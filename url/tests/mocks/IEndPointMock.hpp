@@ -1,5 +1,5 @@
-#ifndef IENDPOINTMOCK_HPP_
-#define IENDPOINTMOCK_HPP_
+#ifndef URL_TESTS_MOCKS_IENDPOINTMOCK_HPP_
+#define URL_TESTS_MOCKS_IENDPOINTMOCK_HPP_
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>

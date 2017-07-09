@@ -1,5 +1,5 @@
-#ifndef IURLSOCK_HPP_
-#define IURLSOCK_HPP_
+#ifndef URL_IURLSOCK_HPP_
+#define URL_IURLSOCK_HPP_
 
 #include "Buffer.hpp"
 #include "RxSegmentAssembler.hpp"

@@ -1,5 +1,5 @@
-#ifndef RXBUFFERMANAGER_HPP_
-#define RXBUFFERMANAGER_HPP_
+#ifndef URL_RXBUFFERMANAGER_HPP_
+#define URL_RXBUFFERMANAGER_HPP_
 
 #include <list>
 #include <mutex>

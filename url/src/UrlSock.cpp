@@ -9,6 +9,7 @@ UrlSock::UrlSock(uint16_t port):
     mEndpoint(port),
     mRxJob(mTxJobManager, mRxBufferManager, mEndpoint)
 {
+    mEndpoint.orSendFlag(MSG_DONTWAIT);
 }
 
 ESendResult UrlSock::send(const uint8_t* buffer, size_t size, IpPort target)

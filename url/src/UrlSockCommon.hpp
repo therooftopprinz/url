@@ -1,5 +1,5 @@
-#ifndef URLSOCKCOMMON_HPP_
-#define URLSOCKCOMMON_HPP_
+#ifndef URL_URLSOCKCOMMON_HPP_
+#define URL_URLSOCKCOMMON_HPP_
 
 #include <string>
 #include <exception>
@@ -32,6 +32,15 @@ inline IpPort IpPorter(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port
 inline IpPort IpPorter(uint32_t a, uint16_t port){return (uint64_t(a)<<32)|htons(port);}
 inline uint16_t portFromIpPort(IpPort ipPort){return ntohs(ipPort&0xFFFF);}
 inline uint32_t ipFromIpPort(IpPort ipPort){return ipPort>>32;}
+
+inline std::string iptoa(uint32_t i)
+{
+    return
+        std::to_string(i&0xFF)+"."+
+        std::to_string((i>>8)&0xFF)+"."+
+        std::to_string((i>>16)&0xFF)+"."+
+        std::to_string(i>>24);
+}
 
 } // namespace urlsock
 

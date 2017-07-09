@@ -1,5 +1,5 @@
-#ifndef RXSEGMENTASSEMBLER_HPP_
-#define RXSEGMENTASSEMBLER_HPP_
+#ifndef URL_RXSEGMENTASSEMBLER_HPP_
+#define URL_RXSEGMENTASSEMBLER_HPP_
 
 #include <map>
 #include "Buffer.hpp"
